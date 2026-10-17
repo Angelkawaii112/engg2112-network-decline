@@ -89,6 +89,9 @@ python src/shrink.py --panel data/panel.csv
 # Score the ranking one quarter at a time instead of on a single split
 python src/walkforward.py --panel data/panel_nsw.csv --start-year 2021
 
+# What are these declines, really?
+python src/anatomy.py --panel data/panel_nsw.csv
+
 # Does the conclusion survive a different threshold?
 python src/sensitivity.py --panel data/panel_nsw.csv
 
@@ -463,6 +466,50 @@ Relaxing the label to a 15% fall with no persistence requirement produces 285
 declines across 20 quarters, six times the evidence, and there the two methods
 are closest of all. The configurations that make the forest look best are the
 ones with the fewest events to be right about.
+
+### The declines look like real faults, and not like congestion
+
+Everything above predicts these events without ever checking what they are. A
+fall in a crowdsourced download median could be a degraded cell, or the same
+cell measured by different people on different plans and handsets, and only one
+of those is worth sending a crew to.
+
+Upload and latency separate the two. A cell in trouble degrades the whole link;
+a change in who is testing moves download alone.
+
+| median change in the quarter after | declines | everything else |
+| --- | --- | --- |
+| download speed | -38.0% | +3.7% |
+| upload speed | **-34.9%** | +0.6% |
+| latency (up is worse) | **+10.1%** | -0.1% |
+| speed tests run | -17.0% | -0.8% |
+| devices seen | -5.1% | -1.6% |
+
+| how often the quarter looked like this | declines | everything else |
+| --- | --- | --- |
+| upload fell as well | **86%** | 31% |
+| latency got worse | 51% | 26% |
+| both, a whole-link fault | **47%** | 11% |
+| devices grew, congestion | 30% | 30% |
+| devices fell, users left | 44% | 32% |
+| testing halved | **25%** | 4% |
+
+Download and upload fall by almost the same proportion and latency rises with
+them. These are whole-link degradations, not an artefact of which handsets
+turned up, and the ranking is pointing at something real.
+
+Congestion is not the mechanism, which is worth saying because it is the
+intuitive one and the one an extension to census population growth would
+assume. Device counts grow in 30% of declines and 30% of everything else. If
+anything users leave rather than arrive, which is what a cell people have given
+up on would look like.
+
+One row argues against the project. In a quarter of these events the number of
+speed tests halves, against 4% elsewhere. That is either a consequence of a bad
+cell or part of the reason it was recorded as bad, and this data cannot
+separate the two. Shrinking by test count limits the damage without ending the
+argument, and it is the strongest remaining reason to treat the output as a
+list of places to look rather than a list of faults.
 
 ### The system excludes regional New South Wales before it predicts anything
 
