@@ -89,6 +89,9 @@ python src/shrink.py --panel data/panel.csv
 # Score the ranking one quarter at a time instead of on a single split
 python src/walkforward.py --panel data/panel_nsw.csv --start-year 2021
 
+# Does the conclusion survive a different threshold?
+python src/sensitivity.py --panel data/panel_nsw.csv
+
 # Who the pipeline keeps, who it drops, and where the inspection budget goes
 python src/coverage.py --panel data/panel.csv
 
@@ -431,6 +434,35 @@ The forest earns a place only where it was already shown to: the largest moves,
 where it is 27% closer and right four times in five. A deployed version would
 reasonably rank with the simple rule and use the forest to flag the regions it
 expects to fall furthest.
+
+### The conclusion does not depend on where the threshold was drawn
+
+Two numbers in the label were chosen rather than measured: a 20% fall, and the
+requirement that it still be there a quarter later. On a single split the
+chosen setting is the one where the forest leads the baseline most widely,
+which is exactly the pattern that selective reporting produces, so the sweep
+below was run under rolling origin instead.
+
+| threshold | lasting | quarters | declines | AP | baseline | AP won | recall@15% | baseline | recall won |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| -15% | yes | 18 | 98 | 0.408 | 0.386 | 9/18 | 0.660 | 0.683 | 7/18 |
+| -20% | yes | 13 | 43 | 0.488 | 0.443 | 8/13 | 0.796 | 0.863 | 1/13 |
+| -25% | yes | 7 | 18 | 0.660 | 0.409 | 5/7 | 0.810 | 0.929 | 0/7 |
+| -15% | no | 20 | 285 | 0.438 | 0.419 | 12/20 | 0.487 | 0.476 | 11/20 |
+| -20% | no | 19 | 137 | 0.421 | 0.398 | 9/19 | 0.578 | 0.630 | 4/19 |
+| -25% | no | 17 | 72 | 0.437 | 0.424 | 9/17 | 0.618 | 0.711 | 4/17 |
+
+The same thing happens in every row. The forest ranks slightly better on
+average precision and finds slightly fewer declines inside the budget, and
+neither margin is large. The threshold decides how many events exist to be
+found, not which ranker to prefer, and the headline is not an artefact of
+where the line was drawn.
+
+The bottom row is the most informative one despite being the least dramatic.
+Relaxing the label to a 15% fall with no persistence requirement produces 285
+declines across 20 quarters, six times the evidence, and there the two methods
+are closest of all. The configurations that make the forest look best are the
+ones with the fewest events to be right about.
 
 ### The system excludes regional New South Wales before it predicts anything
 
