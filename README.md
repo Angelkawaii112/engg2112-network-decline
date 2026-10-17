@@ -86,6 +86,9 @@ python src/pipeline.py
 # Shrink the noisy medians, label lasting declines, and score the ranking
 python src/shrink.py --panel data/panel.csv
 
+# Score the ranking one quarter at a time instead of on a single split
+python src/walkforward.py --panel data/panel_nsw.csv --start-year 2021
+
 # Who the pipeline keeps, who it drops, and where the inspection budget goes
 python src/coverage.py --panel data/panel.csv
 
@@ -395,6 +398,39 @@ This series is Australia-wide rather than per region, so it cannot produce a
 maintenance ranking and does not replace the panel. Its value is that the
 quarterly conclusions survive a change of data source, time granularity and
 target.
+
+### Scored one quarter at a time, the forest and the baseline are a coin flip
+
+The headline above comes from one split, and 17 declines is a thin basis for
+any claim. Rolling origin tests it the way the system would be used: for each
+quarter in turn, fit on everything whose outcome was known by then, rank that
+quarter's regions, and score the ranking. Thirteen quarters could be scored,
+holding 43 declines between them.
+
+| | model | mean reversion | random |
+| --- | --- | --- | --- |
+| average precision | 0.493 | 0.443 | 0.029 |
+| quarters won | **7** | 6 | – |
+| recall@15% | 0.775 | **0.863** | 0.150 |
+| quarters won | 2 | **5** (6 tied) | – |
+
+The forest is marginally ahead on ranking quality and behind on the metric the
+system is actually operated by. Neither result is stable: a quarter holds two
+to five declines, so one region changing rank moves recall by tens of
+percentage points. The single split that produced 0.551 against 0.331 was a
+favourable draw rather than a demonstration.
+
+The claim that survives is the one about the system rather than the model. Both
+rankings beat random inspection by a wide margin in every quarter scored, which
+is what the shrinkage and the lasting-decline label bought. Which ranker sits
+inside the system is not something this data can settle, and on that evidence
+the one-parameter rule is the better engineering choice: it has nothing to
+retrain, nothing to drift, and nothing to explain to whoever inherits it.
+
+The forest earns a place only where it was already shown to: the largest moves,
+where it is 27% closer and right four times in five. A deployed version would
+reasonably rank with the simple rule and use the forest to flag the regions it
+expects to fall furthest.
 
 ### The system excludes regional New South Wales before it predicts anything
 
