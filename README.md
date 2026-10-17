@@ -89,6 +89,9 @@ python src/shrink.py --panel data/panel.csv
 # Score the ranking one quarter at a time instead of on a single split
 python src/walkforward.py --panel data/panel_nsw.csv --start-year 2021
 
+# What happens after a region falls?
+python src/persistence.py --panel data/panel_nsw.csv
+
 # Do declines cluster in space?
 python src/clustering.py --panel data/panel_nsw.csv
 
@@ -516,6 +519,45 @@ cell or part of the reason it was recorded as bad, and this data cannot
 separate the two. Shrinking by test count limits the damage without ending the
 argument, and it is the strongest remaining reason to treat the output as a
 list of places to look rather than a list of faults.
+
+### Most falls undo themselves, and the ones that do not are permanent
+
+Everything else here predicts who will fall. What happens afterwards was never
+asked, and it changes the operational advice more than any model comparison
+does. Following all 210 falls of at least 20% forward:
+
+| quarters later | still observed | still down 20% | share |
+| --- | --- | --- | --- |
+| 1 | 210 | 210 | 100% |
+| 2 | 177 | 57 | **32%** |
+| 3 | 161 | 49 | 30% |
+| 4 | 152 | 52 | 34% |
+| 5 | 150 | 44 | 29% |
+| 6 | 138 | 41 | 30% |
+
+**68% of falls undo themselves within two quarters.** Dispatching on a single
+bad quarter would waste two visits in three, which is the measured
+justification for the persistence rule that had until now only been argued for
+on operational grounds.
+
+**After two quarters the curve stops moving.** The share still down is 32%,
+30%, 34%, 29%, 30% at two through six quarters out. The two-quarter test is
+close to a perfect sieve: what survives it is permanent as far as this data
+reaches, and waiting longer buys nothing but delay.
+
+**A fifth of the affected regions produce two fifths of the falls.**
+
+| | regions |
+| --- | --- |
+| fell once | 70 |
+| fell twice | 30 |
+| fell three or more times | **23** (one of them five times) |
+
+Those 23 regions account for 80 of the 210 falls, 38%. They are a standing
+problem rather than an event, and sending a crew to the same place five times
+is the wrong response. A deployed system should separate them out: inspect the
+one-off falls, and put the repeat offenders on a list for capacity planning
+instead.
 
 ### Declines do not cluster in space
 
