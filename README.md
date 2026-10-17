@@ -80,6 +80,9 @@ python src/mlab.py --start 2026-06-01 --end 2026-08-31 --out data/mlab_daily.csv
 # Ask the weather and forecasting questions again, a day at a time
 python src/daily.py --daily data/mlab_daily.csv
 
+# Everything at once: panel to inspection list
+python src/pipeline.py
+
 # Shrink the noisy medians, label lasting declines, and score the ranking
 python src/shrink.py --panel data/panel.csv
 
@@ -295,6 +298,34 @@ Three checks, because a jump this size usually means a mistake:
 The cost is that the test years contain only 29 declines once the label is this
 strict, so these figures carry a wide uncertainty and should be read as the
 shape of the result rather than its precise value.
+
+### The system end to end
+
+`src/pipeline.py` runs the whole thing with one command, and its five stages are
+the five jobs a deployed version would run on a schedule:
+
+| stage | what it does | when it runs |
+| --- | --- | --- |
+| collect | read the quarter Ookla published, aggregate tiles into regions | once a quarter, after the release |
+| measure | shrink each region's median toward its own history | immediately after, deterministic |
+| label | mark the declines that lasted | only for quarters with two quarters after them |
+| learn | refit on everything whose outcome is known | each quarter, from scratch |
+| rank | score the newest quarter and write the inspection list | each quarter |
+
+The output is `ui/inspection_list.csv`: every region ranked, with an `inspect`
+flag marking the 15% a crew would visit. On the current data that is 27 of 179
+regions, 78% of them urban and 22% outer suburban.
+
+Refitting from scratch each quarter is cheap here and avoids a stale model
+drifting away from the network it describes, but it moves the question of what
+to monitor. Accuracy on a fixed test set stops being the useful signal once the
+training window keeps sliding. The check that matters is whether this quarter's
+ranking resembles last quarter's: a list that reshuffles completely is evidence
+that the measurement changed, not that the network did.
+
+The ranking is a priority order for inspection, not a decision. A crew confirms
+or dismisses what it finds, and those outcomes are the only labels that
+describe real faults rather than movements in a crowdsourced median.
 
 ### Congestion proxies already in the data move the number slightly
 
