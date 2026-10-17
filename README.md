@@ -80,6 +80,9 @@ python src/mlab.py --start 2026-06-01 --end 2026-08-31 --out data/mlab_daily.csv
 # Ask the weather and forecasting questions again, a day at a time
 python src/daily.py --daily data/mlab_daily.csv
 
+# Shrink the noisy medians, label lasting declines, and score the ranking
+python src/shrink.py --panel data/panel.csv
+
 # Rank every region for the next quarter and write the dashboard's input
 python src/export_predictions.py --panel data/panel.csv --out ui
 ```
@@ -235,6 +238,55 @@ knocks out a tower for two days is averaged away long before the model sees
 it. The proposal assumed weather would matter; at the granularity open data
 allows, it does not.
 
+### Measuring before predicting is what made the model useful
+
+Every result above was held back by the same thing. A region's quarterly speed
+is the median of however many tests people happened to run there: 59 one
+quarter, 206 the next. A 20% decline built from two such numbers is often only
+that movement, and mean reversion predicts a bounce better than anything else
+can, which is why the forest could only reach 0.385 against its 0.347.
+
+Two changes follow from that diagnosis, both in `src/shrink.py`:
+
+1. **Shrink the speed before using it.** Each quarter's median is pulled toward
+   the region's own history, weighted by the number of tests behind it:
+   `w = tests / (tests + c)`. The constant `c` is the median test count of the
+   training years, 141, so a typical region trusts this quarter and its past
+   equally. It is read from the training split and never tuned on the test
+   years.
+2. **Label a decline only if it lasts.** Down at least 20% next quarter *and*
+   still down the quarter after. A crew should not be sent to a cell that
+   recovered on its own, and a one-quarter dip is exactly what the baseline is
+   good at calling.
+
+On the 2024-2026 test years, with 29 declines among 1,353 region-quarters:
+
+| method | average precision | recall@10% | recall@15% | recall@20% |
+| --- | --- | --- | --- | --- |
+| random inspection | 0.021 | 0.100 | 0.150 | 0.200 |
+| mean reversion | 0.301 | 0.793 | 0.793 | 0.897 |
+| **random forest** | **0.584** | **0.828** | **0.862** | **0.921** |
+
+Inspecting the top 15% finds 86% of the regions that will decline and stay
+declined, 5.7 times what inspecting 15% at random would find. The forest's lead
+over the baseline widens from 0.038 to 0.283, so the earlier conclusion that
+most of the signal was mean reversion was a statement about the noise, not
+about the network.
+
+Three checks, because a jump this size usually means a mistake:
+
+- **The labels describe real declines.** 97% of them also fell at least 20% on
+  the unsmoothed numbers, by a median of 37%. Shrinkage removed noise, it did
+  not invent a softer target.
+- **No trivial rule reproduces it.** Ranking by the most recent change scores
+  0.015, ranking by fewest tests 0.025, against the forest's 0.584.
+- **The constant is not fitted.** c of 50, 100 and 200 all show the same
+  pattern; 141 is the training median rather than the best of those.
+
+The cost is that the test years contain only 29 declines once the label is this
+strict, so these figures carry a wide uncertainty and should be read as the
+shape of the result rather than its precise value.
+
 ### The daily check confirms both quarterly conclusions
 
 A quarter is a long time to average over, so weather could plausibly have been
@@ -331,7 +383,7 @@ our plan from tile-level to region-level modelling.
 - [x] Test the model against a mean-reversion baseline
 - [x] Daily-resolution check of the weather question using M-Lab
 - [ ] Variable region size so sparse areas have enough data to model
-- [ ] Produce the maintenance priority ranking
+- [x] Produce the maintenance priority ranking
 
 ## Notes
 
