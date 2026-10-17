@@ -83,6 +83,9 @@ python src/daily.py --daily data/mlab_daily.csv
 # Shrink the noisy medians, label lasting declines, and score the ranking
 python src/shrink.py --panel data/panel.csv
 
+# Who the pipeline keeps, who it drops, and where the inspection budget goes
+python src/coverage.py --panel data/panel.csv
+
 # Rank every region for the next quarter and write the dashboard's input
 python src/export_predictions.py --panel data/panel.csv --out ui
 ```
@@ -325,6 +328,48 @@ This series is Australia-wide rather than per region, so it cannot produce a
 maintenance ranking and does not replace the panel. Its value is that the
 quarterly conclusions survive a change of data source, time granularity and
 target.
+
+### The system excludes regional New South Wales before it predicts anything
+
+The earlier version of this section reported a recall of 0.00 across ten
+regional areas and read as a model that performed badly there. Re-measuring it
+under the current method showed something worse, and more structural: regional
+areas are not predicted badly, they are dropped.
+
+| region-quarters surviving | urban | outer | regional |
+| --- | --- | --- | --- |
+| in the panel | 5,448 | 2,320 | 1,105 |
+| has every feature | 4,725 | 1,142 | 198 |
+| outcome also known | 4,338 | 911 | **104** |
+
+91% of regional region-quarters are gone before training starts, and the
+2024-2026 test window contains none at all. The cause is visible in what each
+kind of area can supply:
+
+| | urban | outer | regional |
+| --- | --- | --- | --- |
+| regions | 256 | 247 | 265 |
+| median tests per quarter | 282 | 80 | **61** |
+| median quarters observed per region | 29 | 5 | **2** |
+| share of rows missing a feature | 13% | 51% | **82%** |
+
+The lag features need four quarters of history. Regional regions have a median
+of two. There are as many regional regions as urban ones; they simply cannot
+be seen.
+
+This is self-reinforcing, and the loop is the finding rather than a caveat on
+it. Ookla records a tile when somebody runs a speed test, so few users produce
+few tests, few tests produce sparse history, sparse history excludes the region
+from the model, exclusion keeps it out of the maintenance ranking, and service
+there stays as it was. A system built to direct maintenance would, used
+unchanged, direct it exclusively to the places already best served: at a 15%
+budget, 77% of inspections go to urban regions and 23% to outer suburban ones.
+
+The ranking should therefore be presented as covering urban and outer-suburban
+New South Wales only, with regional areas handled by scheduled inspection
+rather than by this model. Stating the coverage is not a disclaimer; a ranking
+that silently omits a third of the state would misdirect the budget it exists
+to allocate.
 
 ### The model fails where it matters most
 
