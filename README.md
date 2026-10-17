@@ -89,6 +89,9 @@ python src/shrink.py --panel data/panel.csv
 # Score the ranking one quarter at a time instead of on a single split
 python src/walkforward.py --panel data/panel_nsw.csv --start-year 2021
 
+# How many regions should actually be inspected?
+python src/costs.py --panel data/panel_nsw.csv
+
 # What happens after a region falls?
 python src/persistence.py --panel data/panel_nsw.csv
 
@@ -519,6 +522,50 @@ cell or part of the reason it was recorded as bad, and this data cannot
 separate the two. Shrinking by test count limits the damage without ending the
 argument, and it is the strongest remaining reason to treat the output as a
 list of places to look rather than a list of faults.
+
+### Priced as a decision, the cheap ranker wins where the stakes are high
+
+This repository kept saying the model's value depends on what an unnecessary
+inspection costs, and then not pricing it. The prices are not public, but the
+decision depends only on their ratio, and a ratio can be swept.
+
+Let R be the cost of missing a lasting decline divided by the cost of one
+inspection. Inspecting the top k regions costs k and leaves whatever it misses,
+so a budget's expected cost is `k + R x (declines missed)`, in units of one
+inspection. Scored under rolling origin, on quarters averaging 116 regions and
+3.3 lasting declines:
+
+| R | do nothing | forest budget | cost | baseline budget | cost | cheaper | saving |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2 | 6.6 | 1% | 6.2 | 0% | 6.6 | forest | 6% |
+| 5 | 16.5 | 3% | 12.4 | 5% | 12.8 | forest | 25% |
+| 10 | 33.1 | 6% | 19.4 | 5% | 19.8 | forest | 41% |
+| 20 | 66.2 | 7% | 31.2 | 14% | **24.0** | **baseline** | 64% |
+| 50 | 165.4 | 39% | 49.1 | 14% | **35.5** | **baseline** | 79% |
+| 100 | 330.8 | 39% | 52.9 | 25% | **44.5** | **baseline** | 87% |
+
+Three things follow, and none of them is a statement about accuracy.
+
+**Inspecting something beats inspecting nothing from R = 2 upward.** The
+ranking does not have to be good for the system to pay; it has to be better
+than arbitrary, and it is.
+
+**The right budget depends on the price, not on the model.** At R = 5 the
+cheapest policy inspects 3-5% of regions. At R = 50 it inspects 14-39%. A fixed
+15% budget, used throughout this repository for comparability, is close to
+optimal only near R = 20.
+
+**The baseline is cheaper wherever the stakes are high.** At R of 20 and above
+the one-parameter rule costs less than the forest at each one's own best
+budget, by 23%, 28% and 16%. The forest's narrow lead at low R is where the
+decision matters least, since little is being spent either way. This is the
+recall result again, in the units an operator would actually argue about, and
+it is why the pipeline ships the simple ranker.
+
+The 68% self-recovery rate prices in here too. A system dispatching on a single
+bad quarter would pay for about three visits per real fault instead of one, so
+waiting the extra quarter is worth roughly 2R per fault avoided. That is the
+persistence rule's justification stated as money rather than as judgement.
 
 ### Most falls undo themselves, and the ones that do not are permanent
 
