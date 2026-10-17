@@ -8,3 +8,4 @@ __pycache__/
 # the AI use log is kept locally and submitted with the report,
 # not published in a public repository
 notes/ai_log*.md
+ui/inspection_list.csv
