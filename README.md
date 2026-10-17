@@ -86,6 +86,9 @@ python src/shrink.py --panel data/panel.csv
 # Who the pipeline keeps, who it drops, and where the inspection budget goes
 python src/coverage.py --panel data/panel.csv
 
+# The four figures the report argues from
+python src/figures.py --panel data/panel.csv --out figures
+
 # Rank every region for the next quarter and write the dashboard's input
 python src/export_predictions.py --panel data/panel.csv --out ui
 ```
