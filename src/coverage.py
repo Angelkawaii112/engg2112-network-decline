@@ -13,7 +13,7 @@ The answer belongs in the report next to the headline recall, not underneath
 it.
 
 Usage:
-    python src/coverage.py --panel data/panel.csv
+    python src/coverage.py --panel data/panel_nsw.csv
 """
 import argparse
 import os
@@ -100,7 +100,7 @@ def main(panel_path, split_year, budget, trees, seed):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--panel", default="data/panel.csv")
+    p.add_argument("--panel", default="data/panel_nsw.csv")
     p.add_argument("--split-year", type=int, default=2024)
     p.add_argument("--budget", type=float, default=0.15)
     p.add_argument("--trees", type=int, default=400)

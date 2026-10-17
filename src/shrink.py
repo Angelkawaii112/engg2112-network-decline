@@ -26,7 +26,7 @@ typical region trusts this quarter and its own history equally. It is read
 from the training split alone and never tuned against the test years.
 
 Usage:
-    python src/shrink.py --panel data/panel.csv
+    python src/shrink.py --panel data/panel_nsw.csv
 """
 import argparse
 import os
@@ -131,7 +131,7 @@ def main(panel_path, split_year, trees, seeds):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--panel", default="data/panel.csv")
+    p.add_argument("--panel", default="data/panel_nsw.csv")
     p.add_argument("--split-year", type=int, default=2024)
     p.add_argument("--trees", type=int, default=400)
     p.add_argument("--seeds", type=int, default=10)

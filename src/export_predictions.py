@@ -13,7 +13,7 @@ Two files come out:
   history.csv       the download speed of every region in every quarter
 
 Usage:
-    python src/export_predictions.py --panel data/panel.csv --out ui
+    python src/export_predictions.py --panel data/panel_nsw.csv --out ui
 """
 import argparse
 import os
@@ -72,7 +72,7 @@ def main(panel_path, out_dir, trees, seed):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--panel", default="data/panel.csv")
+    p.add_argument("--panel", default="data/panel_nsw.csv")
     p.add_argument("--out", default="ui")
     p.add_argument("--trees", type=int, default=300)
     p.add_argument("--seed", type=int, default=0)

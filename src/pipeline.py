@@ -5,9 +5,10 @@ Each stage below is a thing that would run on a schedule rather than a thing
 somebody does by hand, and the reason they are written as separate stages is
 that they fail differently and would be monitored differently:
 
-  collect    read the quarter Ookla published and aggregate tiles into regions.
-             Runs once a quarter, a few minutes after the release. Fails loudly
-             and is simply retried; nothing downstream can run without it.
+  collect    read the quarter Ookla published, aggregate tiles into regions,
+             and drop everything outside New South Wales. Runs once a quarter,
+             a few minutes after the release. Fails loudly and is simply
+             retried; nothing downstream can run without it.
   measure    shrink each region's median toward its own history by how many
              tests stand behind it. Deterministic, no model, no training.
   label      mark the declines that lasted, which can only be done for quarters
@@ -49,12 +50,19 @@ def stage(name, n=None):
     print(f"  {name:<34}" + (f"{n:>8,} rows" if n is not None else ""))
 
 
-def collect(panel_path, refresh):
+def collect(panel_path, refresh, keep="New South Wales"):
     if refresh:
         from build_panel import build
         build(out=panel_path)
     df = pd.read_csv(panel_path)
-    stage("collect   region-quarters", len(df))
+    if "state" not in df.columns:
+        from boundary import label_states
+        before = len(df)
+        df = label_states(df)
+        df = df[df.state == keep].drop(columns=["state"])
+        stage(f"collect   in {keep} (of {before:,} in the box)", len(df))
+    else:
+        stage("collect   region-quarters", len(df))
     return df
 
 
@@ -125,7 +133,7 @@ def main(panel_path, out_dir, split_year, trees, seed, budget, refresh):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--panel", default="data/panel.csv")
+    p.add_argument("--panel", default="data/panel_nsw.csv")
     p.add_argument("--out", default="ui")
     p.add_argument("--split-year", type=int, default=2024)
     p.add_argument("--trees", type=int, default=400)

@@ -177,55 +177,60 @@ with that fraction fitted on the training years.
 
 | Predictor | MAE | Average precision | Recall @10% | @15% | @20% |
 |---|---|---|---|---|---|
-| No change | 0.193 | 0.120 | 11.6% | 17.4% | 23.2% |
-| Seasonal average | 0.206 | 0.143 | 12.1% | 18.4% | 27.4% |
-| **Mean reversion, one parameter** | 0.188 | **0.347** | **34.7%** | 46.3% | 56.3% |
-| Random forest | **0.167** | **0.385** | 33.2% | **50.0%** | **58.9%** |
+| No change | 0.199 | 0.130 | 2.8% | 8.3% | 13.8% |
+| Seasonal average | 0.221 | 0.144 | 15.6% | 18.3% | 22.9% |
+| **Mean reversion, one parameter** | 0.194 | **0.368** | **30.3%** | 43.1% | 55.0% |
+| Random forest | **0.175** | **0.372** | 30.3% | **46.8%** | **56.9%** |
 
-One line of arithmetic reaches 0.347 average precision against 0.120 for a
-random ranking. The forest adds 0.038 on top of that. Put another way, about
-86% of the predictable structure in this problem is mean reversion.
+One line of arithmetic reaches 0.368 average precision against 0.130 for a
+random ranking. The forest adds 0.004 on top of that, which is inside the
+seed-to-seed noise. Put another way, essentially all of the predictable
+structure in this problem, as it was framed here, is mean reversion.
 
 That is not a reason to drop the model, but it is a reason to be precise
-about what it buys. The forest improves MAE by 11% and finds 3.7 percentage
-points more declining regions within a 15% inspection budget. Whether that
-justifies the extra complexity depends on what an unnecessary inspection
-costs, which public data cannot tell us.
+about what it buys. The forest improves MAE by 10% and finds 3.7 percentage
+points more declining regions within a 15% inspection budget. This framing of
+the problem was eventually abandoned for that reason; see the shrinkage
+section below.
 
 ### The forest earns its keep on the large moves
 
 | Size of the actual change | MAE, mean reversion | MAE, forest | Forest closer |
 |---|---|---|---|
-| Smallest quarter | 0.035 | 0.075 | 31% |
-| Small | 0.090 | 0.102 | 53% |
-| Large | 0.176 | 0.161 | 63% |
-| **Largest quarter** | **0.453** | **0.330** | **81%** |
+| Smallest quarter | 0.036 | 0.087 | 27% |
+| Small | 0.091 | 0.104 | 46% |
+| Large | 0.182 | 0.170 | 59% |
+| **Largest quarter** | **0.466** | **0.338** | **82%** |
 
 On quiet quarters the simple rule is better and the forest over-reacts. On
 the largest moves the forest is 27% closer and wins four times out of five.
 The gain is concentrated rather than spread thinly, and it sits exactly
 where maintenance planning needs it: the regions about to fall a long way.
 
-### Regression beats classification where it matters
+### Regression and classification are hard to tell apart
 
 | | Average precision | Recall @10% | @15% | @20% | MAE |
 |---|---|---|---|---|---|
-| Classifier, probability of a >20% drop | 0.393 | 34.7% | 44.7% | 55.8% | – |
-| Regressor, size of the change | 0.385 | 33.2% | **50.0%** | **58.9%** | 0.167 |
+| Classifier, probability of a >20% drop | **0.394** | **31.2%** | 45.0% | **58.7%** | – |
+| Regressor, size of the change | 0.372 | 30.3% | **46.8%** | 56.9% | 0.175 |
 
-Ranking quality is about the same, but at the inspection budgets that would
-be used in practice the regressor finds more. It also drops the arbitrary
-20% threshold and keeps the magnitude, so a region can be reported as
-"expected to fall 35%" rather than "0.6 probability of decline".
+The classifier ranks slightly better overall and the regressor finds slightly
+more inside a 15% budget; both differences are small enough that the choice
+cannot be made on these numbers. It was made on what the output has to say
+instead. The regressor drops the arbitrary 20% threshold and keeps the
+magnitude, so a region can be reported as "expected to fall 35%" rather than
+"0.6 probability of decline". The final system returns to a classifier, because
+once the label is a decline that lasts, a probability is the honest thing to
+report and the threshold is no longer arbitrary.
 
 ### Multi-quarter history helps; weather does not
 
 | Features | Average precision | Recall @15% |
 |---|---|---|
-| Current quarter only | 0.370 | 46.3% |
-| **+ multi-quarter history** | **0.393** | 44.7% |
-| + weather | 0.362 | 44.2% |
-| + both | 0.388 | **47.4%** |
+| Current quarter only | 0.362 | 44.0% |
+| **+ multi-quarter history** | **0.394** | **45.0%** |
+| + weather | 0.352 | 42.2% |
+| + both | 0.381 | 44.0% |
 
 Four of the seven most useful features are the ones describing how a region
 has been moving rather than where it is: its position relative to its own
@@ -256,7 +261,7 @@ Every result above was held back by the same thing. A region's quarterly speed
 is the median of however many tests people happened to run there: 59 one
 quarter, 206 the next. A 20% decline built from two such numbers is often only
 that movement, and mean reversion predicts a bounce better than anything else
-can, which is why the forest could only reach 0.385 against its 0.347.
+can, which is why the forest could only reach 0.372 against its 0.368.
 
 Two changes follow from that diagnosis, both in `src/shrink.py`:
 
@@ -271,33 +276,39 @@ Two changes follow from that diagnosis, both in `src/shrink.py`:
    recovered on its own, and a one-quarter dip is exactly what the baseline is
    good at calling.
 
-On the 2024-2026 test years, with 29 declines among 1,353 region-quarters:
+On the 2024-2026 test years, with 17 declines among 721 New South Wales
+region-quarters:
 
 | method | average precision | recall@10% | recall@15% | recall@20% |
 | --- | --- | --- | --- | --- |
-| random inspection | 0.021 | 0.100 | 0.150 | 0.200 |
-| mean reversion | 0.301 | 0.793 | 0.793 | 0.897 |
-| **random forest** | **0.584** | **0.828** | **0.862** | **0.921** |
+| random inspection | 0.024 | 0.100 | 0.150 | 0.200 |
+| mean reversion | 0.331 | 0.765 | 0.765 | 1.000 |
+| **random forest** | **0.551** | **0.782** | **0.876** | **0.882** |
 
-Inspecting the top 15% finds 86% of the regions that will decline and stay
-declined, 5.7 times what inspecting 15% at random would find. The forest's lead
-over the baseline widens from 0.038 to 0.283, so the earlier conclusion that
+Inspecting the top 15% finds 88% of the regions that will decline and stay
+declined, 5.8 times what inspecting 15% at random would find. The forest's lead
+over the baseline widens from 0.004 to 0.220, so the earlier conclusion that
 most of the signal was mean reversion was a statement about the noise, not
-about the network.
+about the network. The baseline reaches every decline by a 20% budget, which
+the forest does not; the model's advantage is concentrated in the tight budgets
+where the choice actually costs something.
 
 Three checks, because a jump this size usually means a mistake:
 
-- **The labels describe real declines.** 97% of them also fell at least 20% on
+- **The labels describe real declines.** 94% of them also fell at least 20% on
   the unsmoothed numbers, by a median of 37%. Shrinkage removed noise, it did
   not invent a softer target.
 - **No trivial rule reproduces it.** Ranking by the most recent change scores
-  0.015, ranking by fewest tests 0.025, against the forest's 0.584.
+  0.015, ranking by fewest tests 0.025, against the forest's 0.551.
 - **The constant is not fitted.** c of 50, 100 and 200 all show the same
-  pattern; 141 is the training median rather than the best of those.
+  pattern; 125 is the training median rather than the best of those.
 
-The cost is that the test years contain only 29 declines once the label is this
-strict, so these figures carry a wide uncertainty and should be read as the
-shape of the result rather than its precise value.
+The cost is that the test years contain only 17 declines once the label is this
+strict and the panel is restricted to New South Wales. The seed-to-seed spread
+on average precision is +/-0.017, and the recall figures move by whole
+percentage points when a single region changes rank. These are the shape of the
+result, not its precise value, and nothing here should be quoted to three
+significant figures.
 
 ### The system end to end
 
@@ -306,15 +317,15 @@ the five jobs a deployed version would run on a schedule:
 
 | stage | what it does | when it runs |
 | --- | --- | --- |
-| collect | read the quarter Ookla published, aggregate tiles into regions | once a quarter, after the release |
+| collect | read the quarter Ookla published, aggregate tiles into regions, drop everything outside the state | once a quarter, after the release |
 | measure | shrink each region's median toward its own history | immediately after, deterministic |
 | label | mark the declines that lasted | only for quarters with two quarters after them |
 | learn | refit on everything whose outcome is known | each quarter, from scratch |
 | rank | score the newest quarter and write the inspection list | each quarter |
 
 The output is `ui/inspection_list.csv`: every region ranked, with an `inspect`
-flag marking the 15% a crew would visit. On the current data that is 27 of 179
-regions, 78% of them urban and 22% outer suburban.
+flag marking the 15% a crew would visit. On the current data that is 14 of 94
+regions, 71% of them urban and 29% outer suburban.
 
 Refitting from scratch each quarter is cheap here and avoids a stale model
 drifting away from the network it describes, but it moves the question of what
@@ -336,12 +347,12 @@ satisfying them.
 
 | features | average precision | recall@15% |
 | --- | --- | --- |
-| current | 0.584 ± 0.006 | 0.862 ± 0.022 |
-| plus demand proxies | **0.598** ± 0.008 | 0.869 ± 0.014 |
+| current | 0.551 ± 0.017 | 0.876 ± 0.018 |
+| plus demand proxies | **0.598** ± 0.012 | 0.882 ± 0.000 |
 
-The gain is about twice the seed noise, so it is real but small, and
-`tests_per_device` is the sixth most used feature. The point of recording it is
-that 0.598 is the figure external population data has to beat, not 0.584.
+The gain is about three times the seed noise, and `tests_per_device` is the
+eighth most used feature. The point of recording it is
+that 0.598 is the figure external population data has to beat, not 0.551.
 Census population may still do so, since device counts describe how many Ookla
 users a region has now while population growth describes a region expanding
 faster than its towers, but the comparison has to be made against this.
@@ -394,24 +405,24 @@ areas are not predicted badly, they are dropped.
 
 | region-quarters surviving | urban | outer | regional |
 | --- | --- | --- | --- |
-| in the panel | 5,448 | 2,320 | 1,105 |
-| has every feature | 4,725 | 1,142 | 198 |
-| outcome also known | 4,338 | 911 | **104** |
+| in the panel | 3,030 | 1,452 | 603 |
+| has every feature | 2,585 | 678 | 86 |
+| outcome also known | 2,366 | 528 | **39** |
 
-91% of regional region-quarters are gone before training starts, and the
+94% of regional region-quarters are gone before training starts, and the
 2024-2026 test window contains none at all. The cause is visible in what each
 kind of area can supply:
 
 | | urban | outer | regional |
 | --- | --- | --- | --- |
-| regions | 256 | 247 | 265 |
-| median tests per quarter | 282 | 80 | **61** |
-| median quarters observed per region | 29 | 5 | **2** |
-| share of rows missing a feature | 13% | 51% | **82%** |
+| regions | 152 | 150 | 153 |
+| median tests per quarter | 231 | 79 | **60** |
+| median quarters observed per region | 29 | 7 | **1** |
+| share of rows missing a feature | 15% | 53% | **86%** |
 
-The lag features need four quarters of history. Regional regions have a median
-of two. There are as many regional regions as urban ones; they simply cannot
-be seen.
+The lag features need four quarters of history. The median regional region has
+one quarter in the panel at all. There are as many regional regions as urban
+ones; they simply cannot be seen.
 
 This is self-reinforcing, and the loop is the finding rather than a caveat on
 it. Ookla records a tile when somebody runs a speed test, so few users produce
@@ -419,7 +430,7 @@ few tests, few tests produce sparse history, sparse history excludes the region
 from the model, exclusion keeps it out of the maintenance ranking, and service
 there stays as it was. A system built to direct maintenance would, used
 unchanged, direct it exclusively to the places already best served: at a 15%
-budget, 77% of inspections go to urban regions and 23% to outer suburban ones.
+budget, 80% of inspections go to urban regions and 20% to outer suburban ones.
 
 The ranking should therefore be presented as covering urban and outer-suburban
 New South Wales only, with regional areas handled by scheduled inspection

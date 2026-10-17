@@ -8,7 +8,7 @@ drawn in greyscale with differing line styles and hatching, so nothing depends
 on colour surviving a printer.
 
 Usage:
-    python src/figures.py --panel data/panel.csv --out figures
+    python src/figures.py --panel data/panel_nsw.csv --out figures
 """
 import argparse
 import os
@@ -183,7 +183,7 @@ def main(panel_path, out, split_year, trees, seed):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--panel", default="data/panel.csv")
+    p.add_argument("--panel", default="data/panel_nsw.csv")
     p.add_argument("--out", default="figures")
     p.add_argument("--split-year", type=int, default=2024)
     p.add_argument("--trees", type=int, default=400)
