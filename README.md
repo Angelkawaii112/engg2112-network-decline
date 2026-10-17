@@ -86,6 +86,9 @@ python src/shrink.py --panel data/panel.csv
 # Who the pipeline keeps, who it drops, and where the inspection budget goes
 python src/coverage.py --panel data/panel.csv
 
+# What the device counts add, and the bar external population data must beat
+python src/demand.py --panel data/panel.csv
+
 # The four figures the report argues from
 python src/figures.py --panel data/panel.csv --out figures
 
@@ -292,6 +295,25 @@ Three checks, because a jump this size usually means a mistake:
 The cost is that the test years contain only 29 declines once the label is this
 strict, so these figures carry a wide uncertainty and should be read as the
 shape of the result rather than its precise value.
+
+### Congestion proxies already in the data move the number slightly
+
+Ookla reports distinct devices per tile alongside the test count, and neither
+had been used. Their ratio is the interesting one: a region running many tests
+per device is one where people keep re-testing a connection that is not
+satisfying them.
+
+| features | average precision | recall@15% |
+| --- | --- | --- |
+| current | 0.584 ± 0.006 | 0.862 ± 0.022 |
+| plus demand proxies | **0.598** ± 0.008 | 0.869 ± 0.014 |
+
+The gain is about twice the seed noise, so it is real but small, and
+`tests_per_device` is the sixth most used feature. The point of recording it is
+that 0.598 is the figure external population data has to beat, not 0.584.
+Census population may still do so, since device counts describe how many Ookla
+users a region has now while population growth describes a region expanding
+faster than its towers, but the comparison has to be made against this.
 
 ### The daily check confirms both quarterly conclusions
 
