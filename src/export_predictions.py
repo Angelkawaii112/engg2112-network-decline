@@ -1,10 +1,11 @@
 """
 Score every region for the next quarter and write the files the dashboard reads.
 
-The model itself is the regressor from regress.py: it predicts the size of next
-quarter's change rather than a yes/no label, because the ranking it produces is
-what a maintenance team actually needs and it does not depend on where the 20%
-threshold was drawn.
+The model is the one from shrink.py: speeds are shrunk toward each region's own
+history before anything is computed, and the label is a decline that is still
+there a quarter later. Ranking by its predicted probability is what a
+maintenance team can act on, because it answers which cells to visit first
+rather than how many crossed a threshold.
 
 Two files come out:
 
@@ -21,48 +22,51 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from regress import add_regression_target
+from shrink import add_persistent, shrink_speed, shrinkage_constant
 
 
 def main(panel_path, out_dir, trees, seed):
     df = pd.read_csv(panel_path)
     df = add_area_type(add_lags(add_history(add_target(df))))
-    df = add_regression_target(df)
+    c = shrinkage_constant(df, split_year=2024)
+    df = add_persistent(shrink_speed(df, c))
 
     feats = FEATURES + LAG_FEATURES
     ready = df.dropna(subset=feats)
 
     # train on every region-quarter whose outcome is already known
-    train = ready.dropna(subset=["target_change"])
-    model = RandomForestRegressor(n_estimators=trees, min_samples_leaf=5,
-                                  random_state=seed, n_jobs=-1)
-    model.fit(train[feats], train.target_change)
+    train = ready.dropna(subset=["fwd_1", "fwd_2"])
+    model = RandomForestClassifier(n_estimators=trees, class_weight="balanced",
+                                   min_samples_leaf=5, random_state=seed, n_jobs=-1)
+    model.fit(train[feats], train.persistent.astype(int))
 
     # score the latest quarter, the one whose outcome is still unknown
     latest = ready.t.max()
     now = ready[ready.t == latest].copy()
-    now["predicted_change"] = model.predict(now[feats])
-    now = now.sort_values("predicted_change")       # most negative first
+    now["risk"] = model.predict_proba(now[feats])[:, 1]
+    now = now.sort_values("risk", ascending=False)
     now["rank"] = range(1, len(now) + 1)
 
     cols = ["rank", "region", "lon", "lat", "year", "quarter", "down_mbps",
             "lat_ms", "tests", "n_tiles", "area_type", "pct_change",
-            "predicted_change"]
+            "smoothed_mbps", "risk"]
     os.makedirs(out_dir, exist_ok=True)
     now[cols].round(4).to_csv(os.path.join(out_dir, "predictions.csv"), index=False)
 
-    hist = df[["region", "year", "quarter", "t", "down_mbps", "tests"]]
+    hist = df[["region", "year", "quarter", "t", "down_mbps",
+               "smoothed_mbps", "tests"]]
     hist.round(3).to_csv(os.path.join(out_dir, "history.csv"), index=False)
 
     q = f"{int(now.year.iloc[0])} Q{int(now.quarter.iloc[0])}"
-    print(f"trained on {len(train):,} region-quarters")
+    print(f"shrinkage constant {c:.0f} tests")
+    print(f"trained on {len(train):,} region-quarters, "
+          f"{train.persistent.sum()} of them declines")
     print(f"scored {len(now):,} regions for the quarter after {q}")
-    print(f"predicted change: median {now.predicted_change.median():+.3f}, "
-          f"worst {now.predicted_change.min():+.3f}")
+    print(f"risk score: median {now.risk.median():.3f}, highest {now.risk.max():.3f}")
     print(f"\nwrote {out_dir}/predictions.csv and {out_dir}/history.csv")
 
 
