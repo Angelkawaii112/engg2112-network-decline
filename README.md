@@ -89,6 +89,12 @@ python src/shrink.py --panel data/panel.csv
 # Score the ranking one quarter at a time instead of on a single split
 python src/walkforward.py --panel data/panel_nsw.csv --start-year 2021
 
+# Do declines cluster in space?
+python src/clustering.py --panel data/panel_nsw.csv
+
+# The two rankers, scored side by side
+python src/rankers.py --panel data/panel_nsw.csv
+
 # What are these declines, really?
 python src/anatomy.py --panel data/panel_nsw.csv
 
@@ -510,6 +516,48 @@ cell or part of the reason it was recorded as bad, and this data cannot
 separate the two. Shrinking by test count limits the damage without ending the
 argument, and it is the strongest remaining reason to treat the output as a
 list of places to look rather than a list of faults.
+
+### Declines do not cluster in space
+
+If a lasting decline were a shared fault, neighbouring regions should sometimes
+fall together: cells lean on the same backhaul, the same power, the same
+upgrade programme. A permutation test asks whether they do. Within each
+quarter, measure how far each declining region sits from the nearest other
+declining region, then shuffle which regions declined, keeping the count per
+quarter fixed, and measure again.
+
+| | km to the nearest other decline |
+| --- | --- |
+| observed | 158.9 |
+| shuffled, mean | 179.3 |
+| shuffled, 5th percentile | 119.0 |
+| proportion of shuffles closer than observed | 0.332 |
+
+Declines are no closer together than chance. This agrees with the earlier
+result that neighbour features added nothing, 0.380 to 0.384 against a seed
+spread of 0.005, and the two together are the same finding reached twice.
+
+Each decline has to stand on its own evidence. A neighbour falling in the same
+quarter is not, on this data, a reason to believe a region more. The caveat is
+scale: these are 8 km cells and the median decline is 159 km from the next one,
+so an effect operating at the scale of a single tower would not be visible
+here. What can be ruled out is region-wide shared causes, not local ones.
+
+### Two rankers, and the simpler one ships
+
+The evaluation could not separate the forest from the one-parameter rule: ahead
+on average precision, behind on recall inside the budget, in every threshold
+tested. When the evidence does not favour the more complicated thing, the
+simpler thing wins. `src/rankers.py` holds both behind one interface, and the
+pipeline deploys mean reversion by default. It has one fitted number, cannot
+drift, retrains in microseconds, and fits in a sentence an operations team can
+check.
+
+The forest is kept for the one thing it was shown to do better. On the largest
+moves it is 27% closer than the simple rule and right four times in five, so
+the inspection list is ordered by mean reversion and carries a
+`steep_fall_expected` flag from the forest. The order says where to go first;
+the flag says where the fall is likely to be severe.
 
 ### The system excludes regional New South Wales before it predicts anything
 

@@ -14,9 +14,12 @@ that they fail differently and would be monitored differently:
   label      mark the declines that lasted, which can only be done for quarters
              old enough to have two quarters after them. This is what makes the
              training set grow by one quarter each time.
-  learn      refit on everything whose outcome is known. Cheap enough to redo
-             from scratch each quarter, which avoids a stale model drifting
-             quietly away from the network it describes.
+  learn      fit the ranker on everything whose outcome is known. The default
+             ranker is the one-parameter mean-reversion rule, because rolling
+             origin could not show the forest beating it inside an inspection
+             budget at any threshold tested. The forest is fitted alongside it
+             and used only for what it was shown to do better: marking the
+             regions expected to fall furthest.
   rank       score the newest quarter, whose outcome nobody knows yet, and
              write the ranking an inspection team works from.
 
@@ -37,10 +40,9 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
+from rankers import Forest, MeanReversion
 from shrink import add_persistent, shrink_speed, shrinkage_constant
 
 BUDGET = 0.15
@@ -83,25 +85,30 @@ def label(df):
 
 def learn(df, feats, trees, seed):
     train = df.dropna(subset=feats + ["fwd_1", "fwd_2"])
-    model = RandomForestClassifier(n_estimators=trees, class_weight="balanced",
-                                   min_samples_leaf=5, random_state=seed, n_jobs=-1)
-    model.fit(train[feats], train.persistent.astype(int))
-    stage(f"learn     fitted on {int(train.persistent.sum())} declines", len(train))
-    return model
+    simple = MeanReversion().fit(train)
+    forest = Forest(trees=trees, seed=seed).fit(train)
+    stage(f"learn     k={simple.k_:+.3f}, forest on "
+          f"{int(train.persistent.sum())} declines", len(train))
+    return simple, forest
 
 
-def rank(df, model, feats, out_dir, budget):
+def rank(df, models, feats, out_dir, budget):
+    simple, forest = models
     ready = df.dropna(subset=feats)
     now = ready[ready.t == ready.t.max()].copy()
-    now["risk"] = model.predict_proba(now[feats])[:, 1]
-    now = now.sort_values("risk", ascending=False)
+    now["priority"] = simple.score(now)
+    now["expected_change"] = simple.predicted_change(now)
+    now["forest_risk"] = forest.score(now)
+    now["steep_fall_expected"] = now.forest_risk >= now.forest_risk.quantile(0.75)
+    now = now.sort_values("priority", ascending=False)
     now["rank"] = range(1, len(now) + 1)
     k = max(1, int(round(budget * len(now))))
     now["inspect"] = now["rank"] <= k
 
     os.makedirs(out_dir, exist_ok=True)
-    cols = ["rank", "inspect", "region", "lon", "lat", "year", "quarter",
-            "down_mbps", "smoothed_mbps", "tests", "area_type", "risk"]
+    cols = ["rank", "inspect", "steep_fall_expected", "region", "lon", "lat",
+            "year", "quarter", "down_mbps", "smoothed_mbps", "tests",
+            "area_type", "expected_change", "forest_risk"]
     path = os.path.join(out_dir, "inspection_list.csv")
     now[cols].round(4).to_csv(path, index=False)
     stage(f"rank      flagged for inspection", k)
@@ -115,16 +122,18 @@ def main(panel_path, out_dir, split_year, trees, seed, budget, refresh):
     df = collect(panel_path, refresh)
     df = measure(df, split_year)
     df = label(df)
-    model = learn(df, feats, trees, seed)
-    now, path = rank(df, model, feats, out_dir, budget)
+    models = learn(df, feats, trees, seed)
+    now, path = rank(df, models, feats, out_dir, budget)
 
     q = f"{int(now.year.iloc[0])} Q{int(now.quarter.iloc[0])}"
     top = now.head(5)
     print(f"\nranking for the quarter after {q}, written to {path}")
-    print(f"\n{'rank':>4}  {'region':<14} {'area':<9} {'Mbps':>7} {'risk':>6}")
+    print(f"\n{'rank':>4}  {'region':<14} {'area':<9} {'Mbps':>7} "
+          f"{'expected':>9}  steep fall")
     for _, r in top.iterrows():
         print(f"{int(r['rank']):>4}  {int(r.region):<14} {r.area_type:<9} "
-              f"{r.down_mbps:>7.0f} {r.risk:>6.2f}")
+              f"{r.down_mbps:>7.0f} {r.expected_change:>+9.3f}  "
+              f"{'yes' if r.steep_fall_expected else '':>9}")
     covered = now[now.inspect].area_type.value_counts(normalize=True)
     print("\ninspections by area: " +
           ", ".join(f"{a} {covered.get(a, 0):.0%}" for a in ["urban", "outer", "regional"]))
