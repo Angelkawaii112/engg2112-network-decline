@@ -1,0 +1,77 @@
+{
+  "retrieved_utc": "2026-10-20T16:29:28.604121+00:00",
+  "assets": [
+    {
+      "key": "erp_2021_initial",
+      "source_page": "https://www.abs.gov.au/statistics/people/population/regional-population/2021",
+      "url": "https://www.abs.gov.au/statistics/people/population/regional-population/2021/32180DS0001_2001-21.xlsx",
+      "path": "data/abs/32180DS0001_2001-21.xlsx",
+      "published": "2022-07-26",
+      "erp_year": 2021,
+      "publication_evidence": "data/sources/regional_2021.txt",
+      "date_policy": "ABS initial release date, or explicit post-release change date for revised workbook",
+      "sha256": "515baa4ad672903805c5e5ef6ee4770b357c741c3642c22a7f7974ff3b000333",
+      "bytes": 736793
+    },
+    {
+      "key": "erp_2022_initial",
+      "source_page": "https://www.abs.gov.au/statistics/people/population/regional-population/2021-22",
+      "url": "https://www.abs.gov.au/statistics/people/population/regional-population/2021-22/32180DS0001_2021-22.xlsx",
+      "path": "data/abs/32180DS0001_2021-22.xlsx",
+      "published": "2023-04-20",
+      "erp_year": 2022,
+      "publication_evidence": "data/sources/regional_2022.txt",
+      "date_policy": "ABS initial release date, or explicit post-release change date for revised workbook",
+      "sha256": "ddc35a6a6345e67d764d7ca0f576632b924a9bdd9eda01f42697a271e1211234",
+      "bytes": 418026
+    },
+    {
+      "key": "erp_2022_revised",
+      "source_page": "https://www.abs.gov.au/statistics/people/population/regional-population/2021-22",
+      "url": "https://www.abs.gov.au/statistics/people/population/regional-population/2021-22/32180DS0001_2021-22r.xlsx",
+      "path": "data/abs/32180DS0001_2021-22r.xlsx",
+      "published": "2023-08-31",
+      "erp_year": 2022,
+      "publication_evidence": "data/sources/regional_2022.txt",
+      "date_policy": "ABS initial release date, or explicit post-release change date for revised workbook",
+      "sha256": "1b0b941c1628c376bac0f54b494011c34b1bceec91c63ee5ff4dd4962c50fc3e",
+      "bytes": 418730
+    },
+    {
+      "key": "erp_2023",
+      "source_page": "https://www.abs.gov.au/statistics/people/population/regional-population/2022-23",
+      "url": "https://www.abs.gov.au/statistics/people/population/regional-population/2022-23/32180DS0001_2022-23.xlsx",
+      "path": "data/abs/32180DS0001_2022-23.xlsx",
+      "published": "2024-03-26",
+      "erp_year": 2023,
+      "publication_evidence": "data/sources/regional_2023.txt",
+      "date_policy": "ABS initial release date, or explicit post-release change date for revised workbook",
+      "sha256": "3a2b3bd484e2d2e4ac4af77287be5fa16feda63a2efe22368b3f8cac7d178b65",
+      "bytes": 344243
+    },
+    {
+      "key": "erp_2024",
+      "source_page": "https://www.abs.gov.au/statistics/people/population/regional-population/2023-24",
+      "url": "https://www.abs.gov.au/statistics/people/population/regional-population/2023-24/32180DS0001_2023-24.xlsx",
+      "path": "data/abs/32180DS0001_2023-24.xlsx",
+      "published": "2025-03-27",
+      "erp_year": 2024,
+      "publication_evidence": "data/sources/regional_2024.txt",
+      "date_policy": "ABS initial release date, or explicit post-release change date for revised workbook",
+      "sha256": "fa3b6336864f4aaed02245a18e9d8414b5966962a2ace7e295cf6a41530f663f",
+      "bytes": 334779
+    },
+    {
+      "key": "sa2_2021",
+      "source_page": "https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/digital-boundary-files",
+      "url": "https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/digital-boundary-files/SA2_2021_AUST_SHP_GDA2020.zip",
+      "path": "data/abs/SA2_2021_AUST_SHP_GDA2020.zip",
+      "published": "2021-07-20",
+      "erp_year": null,
+      "publication_evidence": "data/sources/boundaries.txt",
+      "date_policy": "ABS initial release date, or explicit post-release change date for revised workbook",
+      "sha256": "c4dc5bac209f01177eaa0715d27f32cdb09ab5784fb82979741556d2f8e6d148",
+      "bytes": 50678443
+    }
+  ]
+}

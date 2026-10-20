@@ -1,0 +1,43 @@
+[
+  {
+    "vintage": "erp_2021_initial",
+    "nsw_sa2_rows": 642,
+    "published": "2022-07-26",
+    "workbook_release_text": [
+      "Released at 11.30am (Canberra time) 26 July 2022"
+    ],
+    "date_evidence": "data/sources/regional_2021.txt"
+  },
+  {
+    "vintage": "erp_2022_initial",
+    "nsw_sa2_rows": 642,
+    "published": "2023-04-20",
+    "workbook_release_text": [
+      "Released at 11.30am (Canberra time) 20 April 2023"
+    ],
+    "date_evidence": "data/sources/regional_2022.txt"
+  },
+  {
+    "vintage": "erp_2022_revised",
+    "nsw_sa2_rows": 642,
+    "published": "2023-08-31",
+    "workbook_release_text": [
+      "Released at 11.30am (Canberra time) 31 August 2023"
+    ],
+    "date_evidence": "data/sources/regional_2022.txt"
+  },
+  {
+    "vintage": "erp_2023",
+    "nsw_sa2_rows": 642,
+    "published": "2024-03-26",
+    "workbook_release_text": [],
+    "date_evidence": "data/sources/regional_2023.txt"
+  },
+  {
+    "vintage": "erp_2024",
+    "nsw_sa2_rows": 642,
+    "published": "2025-03-27",
+    "workbook_release_text": [],
+    "date_evidence": "data/sources/regional_2024.txt"
+  }
+]
