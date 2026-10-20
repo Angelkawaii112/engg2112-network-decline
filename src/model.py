@@ -111,6 +111,16 @@ def add_area_type(df: pd.DataFrame) -> pd.DataFrame:
     regional areas. Until ABS population is joined, a region's median number
     of speed tests stands in for how built-up it is: tests track both
     population and how much of the area is covered.
+
+    The bands are cut from the whole panel rather than the training years, so
+    they are assigned with hindsight. That was checked after the training set
+    was found leaking, since it is the same kind of mistake. It is not one:
+    area_type is never a model feature, only a way of grouping results, and
+    recutting the bands on the training years alone leaves the finding that
+    matters unchanged - regional areas keep 6% of their region-quarters either
+    way, against 78% and 79% for urban. Restricting the cut would instead leave
+    73 rows unlabelled, because some regions appear only in the test years, so
+    the hindsight is kept and recorded rather than traded for missing data.
     """
     df = df.copy()
     usage = df.groupby("region").tests.median()

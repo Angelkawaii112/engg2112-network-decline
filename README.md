@@ -528,6 +528,16 @@ that did not need rescuing.
 Every figure in this README is now measured with purging applied, and
 `shrink.purge` is called by every script that builds a training set.
 
+One related thing was checked and deliberately left alone. The urban, outer and
+regional bands are cut from the whole panel rather than the training years, so
+they are assigned with hindsight, which is the same kind of mistake. It is not
+one: `area_type` is never a model feature, only a way of grouping results.
+Recutting the bands on training years alone leaves the finding that matters
+unchanged, regional areas keeping 6% of their region-quarters either way
+against 78% and 79% for urban, while leaving 73 rows unlabelled because some
+regions appear only in the test years. The hindsight is recorded rather than
+traded for missing data.
+
 ### Scored one quarter at a time, the forest and the baseline are a coin flip
 
 The headline above comes from one split, and 17 declines is a thin basis for
