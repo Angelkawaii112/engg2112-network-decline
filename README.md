@@ -438,6 +438,40 @@ The ranking is a priority order for inspection, not a decision. A crew confirms
 or dismisses what it finds, and those outcomes are the only labels that
 describe real faults rather than movements in a crowdsourced median.
 
+### Census population growth does not help either
+
+A teammate joined ABS population to the panel and tested whether a region's
+annual growth rate improves the ranking. It does not. Their numbers, on
+scikit-learn 1.9.1, ten seeds, under the purged protocol:
+
+| features | average precision | recall@15% |
+| --- | --- | --- |
+| devices baseline | 0.4833 ± 0.0106 | 0.7647 |
+| plus population growth | 0.4817 ± 0.0100 | 0.7647 |
+| availability control | 0.4827 ± 0.0133 | 0.7647 |
+
+Growth moves average precision by -0.0016 against a seed spread of ±0.010, and
+recall inside the budget not at all. The availability control is the careful
+part: it adds only an indicator for whether population was observed, so a gain
+from the growth column could not be mistaken for a gain from knowing which
+regions have ABS coverage. Neither column does anything.
+
+This agrees with a result measured here earlier from the other direction.
+Congestion is the mechanism population growth would have to work through, and
+device counts grow in 30% of lasting declines and in 30% of everything else.
+Two independent tests of the same mechanism, both null.
+
+Their work is in `experiments/population_growth/`, with ABS source
+provenance, input hashes, pinned requirements for both scikit-learn versions
+and per-seed results. It also carries the quadkey-to-SA2 intersection this
+repository had listed as outstanding: region centroids against ASGS 2021 SA2
+polygons, with each quarter using only the ABS vintages published by then.
+
+Their write-up notes one thing it could not settle, that the purge removed
+training rows as well as leaking ones, so the drop could not be attributed
+entirely to leakage. The matched-size control above answers it: removing 234
+rows at random costs 0.015 and removing the leaking 234 costs 0.115.
+
 ### Congestion proxies already in the data move the number slightly
 
 Ookla reports distinct devices per tile alongside the test count, and neither
@@ -890,7 +924,7 @@ our plan from tile-level to region-level modelling.
 - [x] Confirm data availability and licence
 - [x] Measure the base rate of decline at several thresholds
 - [x] Build the region-quarter panel for 2019 Q1 to 2026 Q1
-- [ ] Replace the coarse grid with a spatial join on ABS SA2 boundaries
+- [x] Replace the coarse grid with a spatial join on ABS SA2 boundaries
 - [x] Add quarterly weather features (Open-Meteo, in place of BoM)
 - [x] Baselines and a first random forest, validated by time
 - [x] Report recall separately for urban, outer suburban and regional areas
