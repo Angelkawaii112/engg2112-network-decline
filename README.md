@@ -87,7 +87,7 @@ python src/pipeline.py
 python src/shrink.py --panel data/panel.csv
 
 # Score the ranking one quarter at a time instead of on a single split
-python src/walkforward.py --panel data/panel_nsw.csv --start-year 2021
+python src/walkforward.py --panel data/panel_nsw.csv
 
 # How many regions should actually be inspected?
 python src/costs.py --panel data/panel_nsw.csv
@@ -129,6 +129,37 @@ python src/export_predictions.py --panel data/panel.csv --out ui
 ABS SA2 area until the boundary files are wired in. Quadkey prefixes are used
 rather than the `tile_x` / `tile_y` columns because those only exist from
 2023 Q3 onward, and we need every quarter back to 2019.
+
+## Reproducing the figures
+
+Every measured number in this README is asserted by `src/verify_claims.py`,
+which re-derives it and fails if it has moved:
+
+```bash
+python src/verify_claims.py --panel data/panel_nsw.csv
+```
+
+It takes a few minutes and currently reports 18 of 18 figures reproducing.
+Running it is what caught the one discrepancy this README ever had:
+`walkforward.py` defaulted to a start year the documented command did not use,
+so running it bare gave a rolling-origin recall of 0.784 where this file said
+0.775. Neither number was wrong, and anyone reproducing the work would have
+concluded otherwise. The default now matches the documentation.
+
+The one thing a fresh clone cannot do is start from nothing. `data/*.csv` is
+not in the repository, so the panel has to be rebuilt first:
+
+```bash
+python src/build_panel.py                      # reads Ookla's public bucket
+python src/boundary.py --panel data/panel.csv  # writes data/panel_nsw.csv
+```
+
+That first command queries 29 quarterly parquet files of roughly 175 MB each
+and takes hours. The state boundaries it needs are committed, so nothing else
+has to be downloaded by hand. Keeping the panel out of the repository is
+deliberate — it is derived data under a share-alike licence, and committing a
+40 MB CSV to make a report reproducible trades one problem for another — but it
+does mean reproduction starts with a long wait rather than a clone.
 
 ## Findings so far
 

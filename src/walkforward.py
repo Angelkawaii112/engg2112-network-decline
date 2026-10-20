@@ -115,7 +115,7 @@ def main(panel_path, start_year, trees, seeds):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--panel", default="data/panel_nsw.csv")
-    p.add_argument("--start-year", type=int, default=2022)
+    p.add_argument("--start-year", type=int, default=2021)
     p.add_argument("--trees", type=int, default=400)
     p.add_argument("--seeds", type=int, default=10)
     a = p.parse_args()
