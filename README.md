@@ -92,6 +92,9 @@ python src/walkforward.py --panel data/panel_nsw.csv
 # How many regions should actually be inspected?
 python src/costs.py --panel data/panel_nsw.csv
 
+# How far ahead does this still work?
+python src/horizon.py --panel data/panel_nsw.csv
+
 # What happens after a region falls?
 python src/persistence.py --panel data/panel_nsw.csv
 
@@ -597,6 +600,31 @@ The 68% self-recovery rate prices in here too. A system dispatching on a single
 bad quarter would pay for about three visits per real fault instead of one, so
 waiting the extra quarter is worth roughly 2R per fault avoided. That is the
 persistence rule's justification stated as money rather than as judgement.
+
+### It works as far ahead as you ask, which is not a compliment
+
+Predicting four quarters out ought to be harder than predicting one. It is not.
+
+| quarters ahead | quarters scored | events | AP | baseline | margin | recall@15% |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 13 | 43 | 0.488 | 0.443 | +0.045 | 0.796 |
+| 2 | 11 | 35 | 0.475 | 0.470 | +0.006 | 0.790 |
+| 3 | 12 | 35 | 0.499 | 0.373 | +0.126 | 0.702 |
+| 4 | 13 | 39 | 0.475 | 0.310 | +0.165 | 0.786 |
+
+Average precision sits near 0.48 throughout while the baseline decays from
+0.443 to 0.310, so the margin grows with distance instead of shrinking.
+
+A model detecting a fault as it develops would get worse further out, because
+the evidence would not exist yet. One that does equally well at four quarters
+is not detecting an event. It is recognising a standing condition: a region
+sitting well above its own long-run level will come back down, and that is
+visible a year before it happens because it is already true.
+
+So this is a triage tool, not an early warning. It says which regions carry the
+problem and never when the problem will arrive. A team can pick a horizon to
+suit how far ahead it plans, since they are all about equally reliable, but a
+four-quarter prediction is not a timetable and should not be presented as one.
 
 ### Most falls undo themselves, and the ones that do not are permanent
 
