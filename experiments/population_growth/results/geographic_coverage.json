@@ -1,0 +1,12 @@
+{
+  "regions": 455,
+  "region_counts": {
+    "matched": 408,
+    "unmatched": 47
+  },
+  "region_matching_fraction": 0.8967032967032967,
+  "panel_rows": 5085,
+  "panel_row_matching_fraction": 0.8709931170108162,
+  "method": "Quadkey centres intersecting exactly one NSW ASGS2021 SA2 polygon; no nearest-area substitution",
+  "limitation": "Centres can be offshore; a quadkey region can overlap multiple SA2s. The original NSW state filter also retains some coastal centres."
+}

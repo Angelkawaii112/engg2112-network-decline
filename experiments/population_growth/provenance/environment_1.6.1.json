@@ -1,0 +1,26 @@
+{
+  "sklearn_version": "1.6.1",
+  "numpy_version": "2.5.4",
+  "pandas_version": "3.0.6",
+  "train_matrix_sha256": "063ee19de73f07c245ca487846d1718c26e00b300a05fafc764d58d78e9a3549",
+  "train_rows": 2212,
+  "test_rows": 721,
+  "shrinkage_constant": 125.0,
+  "results": [
+    {
+      "feature_set": "network_history",
+      "ap_mean": 0.5527698530748015,
+      "ap_std": 0.016182475652634896,
+      "recall15_mean": 0.8764705882352942,
+      "recall15_std": 0.017647058823529415
+    },
+    {
+      "feature_set": "devices_baseline",
+      "ap_mean": 0.5975928537000225,
+      "ap_std": 0.012702237301961164,
+      "recall15_mean": 0.8823529411764707,
+      "recall15_std": 1.1102230246251565e-16
+    }
+  ],
+  "scope": "Unchanged original score function and feature construction; isolated sklearn directory precedes the unchanged primary .venv on sys.path."
+}
