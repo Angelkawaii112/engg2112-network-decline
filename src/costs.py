@@ -38,7 +38,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from shrink import add_persistent, shrink_speed, shrinkage_constant
+from shrink import add_persistent, purge, shrink_speed, shrinkage_constant
 
 RATIOS = (2, 5, 10, 20, 50, 100)
 GRID = np.arange(0.0, 0.51, 0.01)
@@ -50,7 +50,8 @@ def rolling_scores(df, feats, start_year, trees, seed):
     ok = df.fwd_1.notna() & df.fwd_2.notna()
     out = []
     for t in sorted(df[df.year >= start_year].t.unique()):
-        now, known = df[(df.t == t) & ok], df[(df.t < t) & ok]
+        now = df[(df.t == t) & ok]
+        known = purge(df[(df.t < t) & ok], t)
         y = now.persistent.astype(int).values
         if y.sum() < MIN_POSITIVES or len(known) < MIN_TRAIN:
             continue

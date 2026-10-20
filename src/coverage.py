@@ -26,7 +26,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from shrink import add_persistent, shrink_speed, shrinkage_constant
+from shrink import add_persistent, purge, shrink_speed, shrinkage_constant
 
 AREAS = ["urban", "outer", "regional"]
 
@@ -59,7 +59,8 @@ def why_dropped(full, feats):
 
 def who_gets_inspected(full, feats, split_year, budget, trees, seed):
     df = full.dropna(subset=feats + ["fwd_1", "fwd_2"])
-    train, test = df[df.year < split_year], df[df.year >= split_year].copy()
+    train, test = df[df.year < split_year], df[df.year >= split_year]
+    train = purge(train, test.t.min()).copy()
     m = RandomForestClassifier(n_estimators=trees, class_weight="balanced",
                                min_samples_leaf=5, random_state=seed, n_jobs=-1)
     m.fit(train[feats], train.persistent.astype(int))

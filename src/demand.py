@@ -32,7 +32,7 @@ from sklearn.metrics import average_precision_score
 from compare import recall_at_budget
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from shrink import add_persistent, shrink_speed, shrinkage_constant
+from shrink import add_persistent, purge, shrink_speed, shrinkage_constant
 
 DEMAND = ["devices", "devices_chg", "devices_per_tile",
           "devices_growth_4q", "tests_per_device"]
@@ -73,7 +73,8 @@ def main(panel_path, split_year, trees, seeds):
     base = FEATURES + LAG_FEATURES
     df = df.dropna(subset=base + ["fwd_1", "fwd_2"])
     train, test = df[df.year < split_year], df[df.year >= split_year]
-    print(f"{len(train):,} train rows, {len(test):,} test rows, "
+    train = purge(train, test.t.min())
+    print(f"{len(train):,} train rows after purging, {len(test):,} test rows, "
           f"{int(test.persistent.sum())} declines\n")
 
     for name, feats in [("current features", base), ("+ demand proxies", base + DEMAND)]:

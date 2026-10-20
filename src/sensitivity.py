@@ -13,11 +13,11 @@ So the sweep is run under rolling origin rather than a single split, because
 that is the evaluation the project trusts. Each cell fits on everything known
 before each quarter, ranks that quarter, and reports how often each ranker won.
 
-The picture is the same in every cell. The forest ranks slightly better on
-average precision and finds slightly fewer declines inside an inspection
-budget, whichever threshold is used and whether or not persistence is required.
-The choice of threshold changes how many events exist to be found; it does not
-change which ranker to prefer.
+The picture is the same in every cell. The forest ranks a little better on
+average precision in four of the six, a little worse in two, and finds fewer
+declines inside an inspection budget in all six, whichever threshold is used
+and whether or not persistence is required. The choice of threshold changes how
+many events exist to be found; it does not change which ranker to prefer.
 
 Usage:
     python src/sensitivity.py --panel data/panel_nsw.csv
@@ -36,7 +36,7 @@ from sklearn.metrics import average_precision_score
 from compare import recall_at_budget
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from shrink import shrink_speed, shrinkage_constant
+from shrink import purge, shrink_speed, shrinkage_constant
 
 BUDGET = 0.15
 DROPS = (-0.15, -0.20, -0.25)
@@ -62,7 +62,8 @@ def sweep_one(df, outcome_cols, feats, start_year, trees, seeds):
     ok = df[outcome_cols].notna().all(axis=1)
     rows = []
     for t in sorted(df[df.year >= start_year].t.unique()):
-        now, known = df[(df.t == t) & ok], df[(df.t < t) & ok]
+        now = df[(df.t == t) & ok]
+        known = purge(df[(df.t < t) & ok], t)
         y = now.y.astype(int)
         if y.sum() < MIN_POSITIVES or len(known) < MIN_TRAIN:
             continue
@@ -105,9 +106,10 @@ def main(panel_path, start_year, trees, seeds):
                   f"{r.rec.mean():>7.3f} {r.rec_rev.mean():>6.3f} "
                   f"{int((r.rec > r.rec_rev).sum()):>6}/{n:<4}")
 
-    print("\nThe forest leads on average precision in every row and trails on "
-          "recall inside the\nbudget in all but one. The threshold decides how "
-          "many events exist, not which\nranker to prefer.")
+    print("\nThe forest leads on average precision in four rows of six and "
+          "trails on recall\ninside the budget in all six. The threshold "
+          "decides how many events exist to be\nfound, not which ranker to "
+          "prefer.")
 
 
 if __name__ == "__main__":

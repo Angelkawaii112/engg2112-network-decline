@@ -38,7 +38,7 @@ from sklearn.metrics import average_precision_score
 from compare import recall_at_budget
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from shrink import shrink_speed, shrinkage_constant
+from shrink import purge, shrink_speed, shrinkage_constant
 
 DROP, BUDGET = -0.20, 0.15
 LEADS = (1, 2, 3, 4)
@@ -60,7 +60,8 @@ def score_lead(df, cols, feats, start_year, trees, seeds):
     ok = df[cols].notna().all(axis=1)
     rows = []
     for t in sorted(df[df.year >= start_year].t.unique()):
-        now, known = df[(df.t == t) & ok], df[(df.t < t) & ok]
+        now = df[(df.t == t) & ok]
+        known = purge(df[(df.t < t) & ok], t)
         y = now.y.astype(int)
         if y.sum() < MIN_POSITIVES or len(known) < MIN_TRAIN:
             continue

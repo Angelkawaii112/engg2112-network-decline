@@ -1,5 +1,20 @@
-duckdb>=1.0
-pandas
-pyarrow
-scikit-learn
-matplotlib
+# Pinned, because they are not interchangeable.
+#
+# A teammate reproducing the demand-proxy figure got 0.630 where this
+# repository reports 0.598, and the only difference was scikit-learn: 1.9.1
+# gave 0.630, 1.6.1 gave 0.598. The random forest's tie-breaking and defaults
+# move between versions, and with 17 declines in the test years a small change
+# in how ties are broken moves average precision by more than any feature in
+# this project does. Seeding the model does not protect against that; pinning
+# the library does.
+#
+# Figures in the README were measured on these versions. Reproduce with:
+#     python3 -m pip install -r requirements.txt
+#     python src/verify_claims.py
+
+duckdb==1.5.5
+pandas==2.3.1
+numpy==2.3.2
+scikit-learn==1.7.2
+matplotlib==3.10.6
+requests==2.34.2

@@ -173,12 +173,24 @@ which re-derives it and fails if it has moved:
 python src/verify_claims.py --panel data/panel_nsw.csv
 ```
 
-It takes a few minutes and currently reports 18 of 18 figures reproducing.
-Running it is what caught the one discrepancy this README ever had:
+It takes a few minutes. Running it caught the first discrepancy this README had:
 `walkforward.py` defaulted to a start year the documented command did not use,
-so running it bare gave a rolling-origin recall of 0.784 where this file said
-0.775. Neither number was wrong, and anyone reproducing the work would have
+so running it bare reported a different rolling-origin recall from the one in
+this file. Neither number was wrong, and anyone reproducing the work would have
 concluded otherwise. The default now matches the documentation.
+
+Two more came from a teammate reproducing the figures on their own machine,
+and both are recorded here because finding them was the useful part.
+
+**The library versions are not interchangeable.** They measured 0.630 where
+this repository reported 0.598, and the difference was scikit-learn alone:
+1.9.1 gave 0.630, 1.6.1 gave 0.598. With seventeen declines in the test years,
+a change in how a forest breaks ties moves average precision further than any
+feature in this project does. Seeding the model does not protect against that,
+so `requirements.txt` now pins every version and says why.
+
+**The training set was leaking.** See the next section; it cost a fifth of the
+headline figure.
 
 The one thing a fresh clone cannot do is start from nothing. `data/*.csv` is
 not in the repository, so the panel has to be rebuilt first:
@@ -363,21 +375,23 @@ Two changes follow from that diagnosis, both in `src/shrink.py`:
    good at calling.
 
 On the 2024-2026 test years, with 17 declines among 721 New South Wales
-region-quarters:
+region-quarters and 1,978 training rows after purging:
 
 | method | average precision | recall@10% | recall@15% | recall@20% |
 | --- | --- | --- | --- | --- |
 | random inspection | 0.024 | 0.100 | 0.150 | 0.200 |
 | mean reversion | 0.331 | 0.765 | 0.765 | 1.000 |
-| **random forest** | **0.551** | **0.782** | **0.876** | **0.882** |
+| **random forest** | **0.436** | 0.759 | 0.765 | 0.788 |
 
-Inspecting the top 15% finds 88% of the regions that will decline and stay
-declined, 5.8 times what inspecting 15% at random would find. The forest's lead
-over the baseline widens from 0.004 to 0.220, so the earlier conclusion that
-most of the signal was mean reversion was a statement about the noise, not
-about the network. The baseline reaches every decline by a 20% budget, which
-the forest does not; the model's advantage is concentrated in the tight budgets
-where the choice actually costs something.
+Inspecting the top 15% finds 77% of the regions that will decline and stay
+declined, 5.1 times what inspecting 15% at random would find. The forest leads
+the baseline on average precision, 0.436 to 0.331, and matches it on recall
+inside the budget while the baseline reaches every decline by a 20% budget.
+
+These numbers were higher before a teammate found that the training set was
+leaking; see the purging section below. The earlier conclusion that most of the
+signal was mean reversion was still a statement about the noise rather than the
+network, but the margin is narrower than this section first claimed.
 
 Three checks, because a jump this size usually means a mistake:
 
@@ -385,13 +399,13 @@ Three checks, because a jump this size usually means a mistake:
   the unsmoothed numbers, by a median of 37%. Shrinkage removed noise, it did
   not invent a softer target.
 - **No trivial rule reproduces it.** Ranking by the most recent change scores
-  0.015, ranking by fewest tests 0.025, against the forest's 0.551.
+  0.015, ranking by fewest tests 0.025, against the forest's 0.436.
 - **The constant is not fitted.** c of 50, 100 and 200 all show the same
   pattern; 125 is the training median rather than the best of those.
 
 The cost is that the test years contain only 17 declines once the label is this
 strict and the panel is restricted to New South Wales. The seed-to-seed spread
-on average precision is +/-0.017, and the recall figures move by whole
+on average precision is +/-0.014, and the recall figures move by whole
 percentage points when a single region changes rank. These are the shape of the
 result, not its precise value, and nothing here should be quoted to three
 significant figures.
@@ -433,12 +447,13 @@ satisfying them.
 
 | features | average precision | recall@15% |
 | --- | --- | --- |
-| current | 0.551 ± 0.017 | 0.876 ± 0.018 |
-| plus demand proxies | **0.598** ± 0.012 | 0.882 ± 0.000 |
+| current | 0.436 ± 0.014 | 0.765 ± 0.000 |
+| plus demand proxies | **0.493** ± 0.010 | 0.765 ± 0.000 |
 
-The gain is about three times the seed noise, and `tests_per_device` is the
-eighth most used feature. The point of recording it is
-that 0.598 is the figure external population data has to beat, not 0.551.
+The gain is about four times the seed noise on average precision and nothing at
+all inside the inspection budget, which is the pattern every feature in this
+project has shown. The point of recording it is
+that 0.493 is the figure external population data has to beat, not 0.436.
 Census population may still do so, since device counts describe how many Ookla
 users a region has now while population growth describes a region expanding
 faster than its towers, but the comparison has to be made against this.
@@ -482,6 +497,37 @@ maintenance ranking and does not replace the panel. Its value is that the
 quarterly conclusions survive a change of data source, time granularity and
 target.
 
+### The training set was leaking into the test years
+
+A row's label is built from the two quarters after it. A row from 2023 Q3 is
+therefore labelled using 2024 Q1, which is a quarter the model was about to be
+tested on. Splitting the data by the year of the features, as every evaluation
+here did at first, leaves 234 such rows in the training set: all of 2023 Q3 and
+Q4, and the most recent and most informative rows there are.
+
+A teammate found this while reproducing the figures. Purging them, which is the
+standard correction in time-series cross-validation, costs a fifth of the
+headline:
+
+| training set | average precision | recall@15% | rows |
+| --- | --- | --- | --- |
+| as first published | 0.551 | 0.876 | 2,212 |
+| **purged** | **0.436** | **0.765** | 1,978 |
+| control: 234 random rows removed | 0.536 | 0.876 | 1,978 |
+
+The control answers the question the purge leaves open. Removing 234 rows at
+random costs 0.015; removing the 234 leaking ones costs 0.115. Seven eighths of
+the drop is the leak rather than the smaller training set.
+
+Rolling origin barely moved, 0.491 to 0.486, and that contrast is the useful
+part. Each quarter's rolling fit leaks only its last two rows out of nearly two
+thousand, while the single split leaked its most recent and most relevant tenth.
+The evaluation this project had already come to trust turned out to be the one
+that did not need rescuing.
+
+Every figure in this README is now measured with purging applied, and
+`shrink.purge` is called by every script that builds a training set.
+
 ### Scored one quarter at a time, the forest and the baseline are a coin flip
 
 The headline above comes from one split, and 17 declines is a thin basis for
@@ -492,16 +538,21 @@ holding 43 declines between them.
 
 | | model | mean reversion | random |
 | --- | --- | --- | --- |
-| average precision | 0.493 | 0.443 | 0.029 |
+| average precision | 0.486 | 0.443 | 0.029 |
 | quarters won | **7** | 6 | – |
-| recall@15% | 0.775 | **0.863** | 0.150 |
-| quarters won | 2 | **5** (6 tied) | – |
+| recall@15% | 0.811 | **0.863** | 0.150 |
+| quarters won | 3 | **4** (6 tied) | – |
 
 The forest is marginally ahead on ranking quality and behind on the metric the
 system is actually operated by. Neither result is stable: a quarter holds two
 to five declines, so one region changing rank moves recall by tens of
-percentage points. The single split that produced 0.551 against 0.331 was a
-favourable draw rather than a demonstration.
+percentage points.
+
+Rolling origin barely moved when the purge was applied, 0.491 to 0.486, because
+each quarter's training set leaks only its final two rows out of nearly two
+thousand. The single split lost a fifth of its score to the same correction,
+because the rows it was leaking were the most recent and most informative ones.
+That is a second reason to have distrusted it.
 
 The claim that survives is the one about the system rather than the model. Both
 rankings beat random inspection by a wide margin in every quarter scored, which
@@ -525,22 +576,22 @@ below was run under rolling origin instead.
 
 | threshold | lasting | quarters | declines | AP | baseline | AP won | recall@15% | baseline | recall won |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| -15% | yes | 18 | 98 | 0.408 | 0.386 | 9/18 | 0.660 | 0.683 | 7/18 |
-| -20% | yes | 13 | 43 | 0.488 | 0.443 | 8/13 | 0.796 | 0.863 | 1/13 |
-| -25% | yes | 7 | 18 | 0.660 | 0.409 | 5/7 | 0.810 | 0.929 | 0/7 |
-| -15% | no | 20 | 285 | 0.438 | 0.419 | 12/20 | 0.487 | 0.476 | 11/20 |
-| -20% | no | 19 | 137 | 0.421 | 0.398 | 9/19 | 0.578 | 0.630 | 4/19 |
-| -25% | no | 17 | 72 | 0.437 | 0.424 | 9/17 | 0.618 | 0.711 | 4/17 |
+| -15% | yes | 18 | 98 | 0.384 | **0.386** | 8/18 | 0.625 | 0.683 | 7/18 |
+| -20% | yes | 13 | 43 | **0.489** | 0.443 | 7/13 | 0.814 | 0.863 | 2/13 |
+| -25% | yes | 7 | 18 | **0.673** | 0.409 | 5/7 | 0.833 | 0.929 | 0/7 |
+| -15% | no | 19 | 281 | **0.429** | 0.426 | 11/19 | 0.460 | 0.475 | 6/19 |
+| -20% | no | 18 | 134 | **0.420** | 0.402 | 8/18 | 0.554 | 0.628 | 3/18 |
+| -25% | no | 16 | 70 | 0.420 | **0.443** | 9/16 | 0.594 | 0.724 | 2/16 |
 
-The same thing happens in every row. The forest ranks slightly better on
-average precision and finds slightly fewer declines inside the budget, and
-neither margin is large. The threshold decides how many events exist to be
+The same thing happens in every row. The forest ranks better on average
+precision in four rows of six and worse in two, finds fewer declines inside the
+budget in all six, and no margin is large. The threshold decides how many events exist to be
 found, not which ranker to prefer, and the headline is not an artefact of
 where the line was drawn.
 
-The bottom row is the most informative one despite being the least dramatic.
-Relaxing the label to a 15% fall with no persistence requirement produces 285
-declines across 20 quarters, six times the evidence, and there the two methods
+The bottom rows are the most informative despite being the least dramatic.
+Relaxing the label to a 15% fall with no persistence requirement produces 281
+declines across 19 quarters, six times the evidence, and there the two methods
 are closest of all. The configurations that make the forest look best are the
 ones with the fewest events to be right about.
 
@@ -602,12 +653,12 @@ inspection. Scored under rolling origin, on quarters averaging 116 regions and
 
 | R | do nothing | forest budget | cost | baseline budget | cost | cheaper | saving |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | 6.6 | 1% | 6.2 | 0% | 6.6 | forest | 6% |
-| 5 | 16.5 | 3% | 12.4 | 5% | 12.8 | forest | 25% |
-| 10 | 33.1 | 6% | 19.4 | 5% | 19.8 | forest | 41% |
-| 20 | 66.2 | 7% | 31.2 | 14% | **24.0** | **baseline** | 64% |
-| 50 | 165.4 | 39% | 49.1 | 14% | **35.5** | **baseline** | 79% |
-| 100 | 330.8 | 39% | 52.9 | 25% | **44.5** | **baseline** | 87% |
+| 2 | 6.6 | 1% | 6.4 | 0% | 6.6 | forest | 3% |
+| 5 | 16.5 | 4% | 11.6 | 5% | 12.8 | forest | 30% |
+| 10 | 33.1 | 10% | 18.5 | 5% | 19.8 | forest | 44% |
+| 20 | 66.2 | 11% | 25.2 | 14% | **24.0** | **baseline** | 64% |
+| 50 | 165.4 | 11% | 43.6 | 14% | **35.5** | **baseline** | 79% |
+| 100 | 330.8 | 32% | 60.3 | 25% | **44.5** | **baseline** | 87% |
 
 Three things follow, and none of them is a statement about accuracy.
 
@@ -616,7 +667,7 @@ ranking does not have to be good for the system to pay; it has to be better
 than arbitrary, and it is.
 
 **The right budget depends on the price, not on the model.** At R = 5 the
-cheapest policy inspects 3-5% of regions. At R = 50 it inspects 14-39%. A fixed
+cheapest policy inspects 4-5% of regions. At R = 50 it inspects 11-14%. A fixed
 15% budget, used throughout this repository for comparability, is close to
 optimal only near R = 20.
 
@@ -638,17 +689,17 @@ Predicting four quarters out ought to be harder than predicting one. It is not.
 
 | quarters ahead | quarters scored | events | AP | baseline | margin | recall@15% |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 13 | 43 | 0.488 | 0.443 | +0.045 | 0.796 |
-| 2 | 11 | 35 | 0.475 | 0.470 | +0.006 | 0.790 |
-| 3 | 12 | 35 | 0.499 | 0.373 | +0.126 | 0.702 |
-| 4 | 13 | 39 | 0.475 | 0.310 | +0.165 | 0.786 |
+| 1 | 13 | 43 | 0.489 | 0.443 | +0.046 | 0.814 |
+| 2 | 11 | 35 | 0.450 | 0.470 | -0.019 | 0.763 |
+| 3 | 12 | 35 | 0.440 | 0.373 | +0.068 | 0.723 |
+| 4 | 13 | 39 | 0.415 | 0.310 | +0.105 | 0.668 |
 
-Average precision sits near 0.48 throughout while the baseline decays from
-0.443 to 0.310, so the margin grows with distance instead of shrinking.
+Average precision falls from 0.489 to 0.415 across a year, a loss of 15%, while
+the baseline falls from 0.443 to 0.310, a loss of 30%. The margin grows with
+distance rather than shrinking.
 
-A model detecting a fault as it develops would get worse further out, because
-the evidence would not exist yet. One that does equally well at four quarters
-is not detecting an event. It is recognising a standing condition: a region
+A model detecting a fault as it develops would decay sharply, because the
+evidence would not exist yet. Losing 15% of its score over a year is not that. It is recognising a standing condition: a region
 sitting well above its own long-run level will come back down, and that is
 visible a year before it happens because it is already true.
 
@@ -772,7 +823,7 @@ few tests, few tests produce sparse history, sparse history excludes the region
 from the model, exclusion keeps it out of the maintenance ranking, and service
 there stays as it was. A system built to direct maintenance would, used
 unchanged, direct it exclusively to the places already best served: at a 15%
-budget, 80% of inspections go to urban regions and 20% to outer suburban ones.
+budget, 81% of inspections go to urban regions and 19% to outer suburban ones.
 
 The ranking should therefore be presented as covering urban and outer-suburban
 New South Wales only, with regional areas handled by scheduled inspection

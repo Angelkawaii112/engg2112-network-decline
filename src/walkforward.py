@@ -12,9 +12,10 @@ ahead. The single split was a favourable draw, which is the result this file
 exists to report.
 
 Rolling origin asks exactly that. For each quarter in turn, fit on every
-region-quarter whose outcome was already known at that point, rank the regions
-in that quarter, and score the ranking against what happened. Nothing from the
-future enters any fit. The result is one score per quarter instead of one score
+region-quarter whose outcome had already closed by then, rank the regions in
+that quarter, and score the ranking against what happened. Nothing from the
+future enters any fit: rows whose label needs the quarter being scored, or the
+one after it, are purged rather than merely dated earlier. The result is one score per quarter instead of one score
 overall, which shows whether the model is reliably better than the baseline or
 better on average because of a few good quarters.
 
@@ -35,7 +36,7 @@ from sklearn.metrics import average_precision_score
 from compare import recall_at_budget
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from shrink import add_persistent, shrink_speed, shrinkage_constant
+from shrink import add_persistent, purge, shrink_speed, shrinkage_constant
 
 BUDGET = 0.15
 MIN_TRAIN = 400          # a fit on fewer rows than this is not worth scoring
@@ -48,7 +49,7 @@ def quarters_to_test(df, start_t):
 
 def one_quarter(df, t, feats, trees, seeds):
     """Fit on what was known before quarter t, score the ranking for t."""
-    known = df[(df.t < t) & df.fwd_1.notna() & df.fwd_2.notna()]
+    known = purge(df[(df.t < t) & df.fwd_1.notna() & df.fwd_2.notna()], t)
     now = df[(df.t == t) & df.fwd_1.notna() & df.fwd_2.notna()]
     y = now.persistent.astype(int)
     if len(known) < MIN_TRAIN or y.sum() < MIN_POSITIVES:

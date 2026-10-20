@@ -25,6 +25,14 @@ The shrinkage constant is the median test count of the training years, so a
 typical region trusts this quarter and its own history equally. It is read
 from the training split alone and never tuned against the test years.
 
+One more thing has to be kept out of the training set, and was not at first.
+A row's label is built from the two quarters after it, so a row from 2023 Q3
+is labelled using 2024 Q1 - a quarter the model is about to be tested on. Those
+rows have to be dropped. Keeping them lifted average precision from 0.436 to
+0.551, and a control that removed the same number of rows at random scored
+0.536, so nearly all of that gap was the leak rather than the smaller training
+set. A teammate found this while trying to reproduce the figures.
+
 Usage:
     python src/shrink.py --panel data/panel_nsw.csv
 """
@@ -61,6 +69,18 @@ def shrink_speed(df, c):
     return df
 
 
+def purge(train, first_test_t, horizon=2):
+    """Drop training rows whose label is built from the test period.
+
+    A row at time t is labelled using t+1 and t+2, so any row within `horizon`
+    quarters of the test split is labelled with data the model is about to be
+    scored on. This is the standard purge from time-series cross-validation and
+    it is not optional: leaving those rows in is how a split that looks honest
+    reports a number it has not earned.
+    """
+    return train[train.t + horizon < first_test_t]
+
+
 def add_persistent(df, drop=DROP, col="smoothed_mbps"):
     """Down by `drop` next quarter and still down the quarter after."""
     df = df.sort_values(["region", "t"]).copy()
@@ -87,12 +107,17 @@ def main(panel_path, split_year, trees, seeds):
     feats = FEATURES + LAG_FEATURES
     df = df.dropna(subset=feats + ["fwd_1", "fwd_2", "raw_fwd_1"])
     train, test = df[df.year < split_year], df[df.year >= split_year]
+    kept = purge(train, test.t.min())
+    dropped = len(train) - len(kept)
+    train = kept
     y = test.persistent.astype(int)
     hit = test[test.persistent]
 
     print(f"shrinkage constant {c:.0f} tests, taken from the training years")
-    print(f"{len(train):,} train rows, {len(test):,} test rows, "
-          f"{y.sum()} declines, base rate {y.mean():.3f}")
+    print(f"{len(train):,} train rows after purging {dropped} whose labels "
+          f"reach into the test years")
+    print(f"{len(test):,} test rows, {y.sum()} declines, "
+          f"base rate {y.mean():.3f}")
     print(f"those declines on the unsmoothed numbers: median "
           f"{hit.raw_fwd_1.median():+.3f}, "
           f"{(hit.raw_fwd_1 <= DROP).mean():.0%} fell at least 20% there too\n")

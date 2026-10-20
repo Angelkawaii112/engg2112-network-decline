@@ -29,7 +29,7 @@ from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
 from persistence import CHRONIC, find_falls
 from rankers import MeanReversion
-from shrink import add_persistent, shrink_speed, shrinkage_constant
+from shrink import add_persistent, purge, shrink_speed, shrinkage_constant
 
 LEADS = (1, 2, 3, 4)
 GRID = np.round(np.arange(0, 0.51, 0.01), 2)
@@ -87,6 +87,9 @@ def main(panel_path, split_year, out_dir, trees, seed):
         df, cols = label_at(base, lead)
         df = df.dropna(subset=feats)
         train = df.dropna(subset=cols)
+        split_t = train[train.year >= split_year].t.min()
+        train = pd.concat([purge(train[train.year < split_year], split_t, lead + 1),
+                           train[train.year >= split_year]])
         simple = MeanReversion().fit(train, target=f"h{lead}")
         forest = RandomForestClassifier(
             n_estimators=trees, class_weight="balanced", min_samples_leaf=5,

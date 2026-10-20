@@ -1,0 +1,264 @@
+{
+  "quarter_predicted": "2026 Q1",
+  "regions": 94,
+  "chronic_regions": 16,
+  "coverage": "urban and outer-suburban New South Wales only",
+  "ranker": "mean reversion, one fitted parameter",
+  "k": -0.0155,
+  "honesty": [
+    "Ranks by how far a region sits above its own long-run speed. A random forest scored no better inside an inspection budget, so the simpler rule is the one deployed.",
+    "Predicts a fall of at least 20% that is still there a quarter later. Two thirds of single-quarter falls undo themselves.",
+    "Regional New South Wales is absent: 94% of its region-quarters lack the history the model needs, so this covers urban and outer-suburban areas only.",
+    "Measured on 17 declines across the 2024-2026 test years. Treat every figure as indicative."
+  ],
+  "budget_curve": [
+    {
+      "budget": 0.0,
+      "recall": 0.0
+    },
+    {
+      "budget": 0.01,
+      "recall": 0.176
+    },
+    {
+      "budget": 0.02,
+      "recall": 0.294
+    },
+    {
+      "budget": 0.03,
+      "recall": 0.412
+    },
+    {
+      "budget": 0.04,
+      "recall": 0.471
+    },
+    {
+      "budget": 0.05,
+      "recall": 0.529
+    },
+    {
+      "budget": 0.06,
+      "recall": 0.529
+    },
+    {
+      "budget": 0.07,
+      "recall": 0.529
+    },
+    {
+      "budget": 0.08,
+      "recall": 0.647
+    },
+    {
+      "budget": 0.09,
+      "recall": 0.765
+    },
+    {
+      "budget": 0.1,
+      "recall": 0.765
+    },
+    {
+      "budget": 0.11,
+      "recall": 0.765
+    },
+    {
+      "budget": 0.12,
+      "recall": 0.765
+    },
+    {
+      "budget": 0.13,
+      "recall": 0.765
+    },
+    {
+      "budget": 0.14,
+      "recall": 0.765
+    },
+    {
+      "budget": 0.15,
+      "recall": 0.765
+    },
+    {
+      "budget": 0.16,
+      "recall": 0.765
+    },
+    {
+      "budget": 0.17,
+      "recall": 0.824
+    },
+    {
+      "budget": 0.18,
+      "recall": 0.824
+    },
+    {
+      "budget": 0.19,
+      "recall": 0.882
+    },
+    {
+      "budget": 0.2,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.21,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.22,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.23,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.24,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.25,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.26,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.27,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.28,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.29,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.3,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.31,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.32,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.33,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.34,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.35,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.36,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.37,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.38,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.39,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.4,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.41,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.42,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.43,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.44,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.45,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.46,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.47,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.48,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.49,
+      "recall": 1.0
+    },
+    {
+      "budget": 0.5,
+      "recall": 1.0
+    }
+  ],
+  "cost_table": [
+    {
+      "ratio": 2,
+      "budget": 0.0,
+      "regions": 0,
+      "cost": 4.9,
+      "cost_of_doing_nothing": 4.9
+    },
+    {
+      "ratio": 5,
+      "budget": 0.03,
+      "regions": 3,
+      "cost": 10.0,
+      "cost_of_doing_nothing": 12.1
+    },
+    {
+      "ratio": 10,
+      "budget": 0.09,
+      "regions": 8,
+      "cost": 14.2,
+      "cost_of_doing_nothing": 24.3
+    },
+    {
+      "ratio": 20,
+      "budget": 0.2,
+      "regions": 19,
+      "cost": 18.8,
+      "cost_of_doing_nothing": 48.6
+    },
+    {
+      "ratio": 50,
+      "budget": 0.2,
+      "regions": 19,
+      "cost": 18.8,
+      "cost_of_doing_nothing": 121.4
+    },
+    {
+      "ratio": 100,
+      "budget": 0.2,
+      "regions": 19,
+      "cost": 18.8,
+      "cost_of_doing_nothing": 242.9
+    }
+  ]
+}
