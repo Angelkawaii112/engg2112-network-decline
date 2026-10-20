@@ -133,6 +133,37 @@ ABS SA2 area until the boundary files are wired in. Quadkey prefixes are used
 rather than the `tile_x` / `tile_y` columns because those only exist from
 2023 Q3 onward, and we need every quarter back to 2019.
 
+## The published site
+
+`docs/` is served by GitHub Pages: `index.html` is the page and `data.json` is
+everything it shows, written by `src/build_site.py`. Nothing is built, bundled
+or fetched from a third party; the only external request is the webfont.
+
+The split between the two files is the architecture rather than a convenience.
+The pipeline produces numbers and the page consumes them, so publishing a new
+quarter is one command and one commit:
+
+```bash
+python src/pipeline.py                    # the inspection list
+python src/build_site.py                  # docs/data.json
+git commit -am "Refresh the site for <quarter>" && git push
+```
+
+The page itself holds no figures, so it does not go stale when the data moves.
+
+What the site offers that a static chart cannot: a horizon control for one to
+four quarters ahead, all of which score about the same; a cost-ratio slider
+that solves for the cheapest inspection budget at that price rather than
+assuming a round 15%; filters for area, flags and region id; a sortable
+ranking; and a per-region history showing the measured median against the
+shrunk series the model actually reads.
+
+The cost slider will sometimes answer that the cheapest policy is to inspect
+nothing, and the page says so in those words. Four quarters out there are about
+2.5 lasting declines in an average quarter, so at a low price for a miss the
+visits cost more than the declines do. That is the model's honest answer and
+not a failure of it.
+
 ## Reproducing the figures
 
 Every measured number in this README is asserted by `src/verify_claims.py`,

@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Network Decline Watch</title>
+<meta name="description" content="Which parts of New South Wales are most likely to lose mobile download speed and not get it back. Built from public Ookla speed tests for ENGG2112, University of Sydney.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23fbe7c6'/%3E%3Crect x='3' y='3' width='4' height='4' fill='%238f3342'/%3E%3Crect x='9' y='9' width='4' height='4' fill='%23111'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@700&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+#err{margin:24px;padding:14px;border:3px solid #8f3342;background:#f9e6e6;
+  color:#111;font:700 14px/1.5 system-ui,sans-serif}
+
+/* Layout: cream board, hard-edged paper panels. Map is a pixel grid because
+   the data is a pixel grid - every region is one 8 km quadkey tile. */
+:root{
+  --ink:#111111; --cream:#fbe7c6; --paper:#ffffff; --paper-warm:#fffdf8;
+  --sunken:#f3e9d8; --lav:#ece4f5; --ask:#b8a4d6; --ask-strong:#66537d;
+  --teach:#e2a65e; --teach-soft:#f5ddbf; --danger:#8f3342; --danger-soft:#f9e6e6;
+  --muted:#6b6257; --locked:#8a7d6a;
+  --line:3px solid var(--ink); --line-thin:2px solid var(--ink);
+  --hard:6px 6px 0 var(--ink); --hard-sm:4px 4px 0 var(--ink);
+  --display:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#f2e6cf; --cream:#15120d; --paper:#211c14; --paper-warm:#1b1710;
+  --sunken:#2a2318; --lav:#2d2640; --ask:#8a74b0; --ask-strong:#c3b0e0;
+  --teach:#e2a65e; --teach-soft:#4a3a22; --danger:#e8899a; --danger-soft:#44222a;
+  --muted:#b5a894; --locked:#8a7d6a; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ink:#f2e6cf; --cream:#15120d; --paper:#211c14; --paper-warm:#1b1710;
+  --sunken:#2a2318; --lav:#2d2640; --ask:#8a74b0; --ask-strong:#c3b0e0;
+  --teach:#e2a65e; --teach-soft:#4a3a22; --danger:#e8899a; --danger-soft:#44222a;
+  --muted:#b5a894; --locked:#8a7d6a; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);
+  font-family:var(--display);font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:28px 56px}
+h1,h2,h3{margin:0;font-weight:700;line-height:1.15;text-wrap:balance}
+h1{font-size:clamp(28px,5vw,42px);letter-spacing:-.02em}
+h2{font-size:19px;letter-spacing:-.01em}
+h3{font-size:14px;text-transform:uppercase;letter-spacing:.08em}
+p{margin:0}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.box{background:var(--paper);border:var(--line);box-shadow:var(--hard-sm)}
+.chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border:var(--line-thin);
+  background:var(--paper);color:var(--ink);white-space:nowrap}
+.chip.warn{background:var(--teach)}
+.chip.bad{background:var(--danger);color:var(--paper)}
+.chip.ghost{border-style:dashed;background:transparent;color:var(--muted)}
+
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;
+  justify-content:space-between;margin-bottom:22px}
+.lede{max-width:52ch;margin-top:8px;color:var(--muted);font-size:14px}
+.stamp{border:var(--line);background:var(--ask);padding:8px 14px;
+  box-shadow:var(--hard-sm)}
+.stamp b{display:block;font-family:var(--mono);font-size:20px}
+.stamp span{font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+
+.readout{display:flex;gap:10px;flex-wrap:wrap}
+.tile{border:var(--line-thin);padding:8px 12px;background:var(--paper-warm);min-width:96px}
+.tile b{display:block;font-family:var(--mono);font-size:22px;line-height:1.1}
+.tile span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.tile.hero{background:var(--teach-soft)}
+.warnbar{border:var(--line-thin);background:var(--danger-soft);color:var(--ink);
+  padding:9px 12px;font-size:13px;margin-bottom:12px;max-width:72ch}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media(max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{padding:16px;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;
+  gap:10px;margin-bottom:12px}
+.map-note{font-size:12px;color:var(--muted);margin-top:10px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+.cell{cursor:pointer}
+.cell:focus-visible{outline:3px solid var(--ask-strong);outline-offset:2px}
+
+.list{max-height:420px;overflow-y:auto;overflow-x:auto;border:var(--line-thin);
+  background:var(--paper-warm)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{position:sticky;top:0;background:var(--sunken);text-align:left;
+  font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  padding:7px 9px;border-bottom:var(--line-thin);white-space:nowrap}
+td{padding:6px 9px;border-bottom:1px solid var(--sunken);white-space:nowrap}
+tr{cursor:pointer}
+tr.on td{background:var(--lav)}
+tr.out td{opacity:.42}
+td.r{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.detail{margin-top:18px;padding:16px}
+.detail .stats{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);
+  margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border:var(--line-thin);
+  margin-right:5px;vertical-align:-2px}
+
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:18px}
+@media(max-width:860px){.cols{grid-template-columns:minmax(0,1fr)}}
+.truth{background:var(--sunken)}
+.truth ul{margin:10px 0 0;padding-left:18px;font-size:13px}
+.truth li{margin-bottom:8px}
+.chronic ol{margin:10px 0 0;padding-left:20px;font-size:13px;
+  columns:2;column-gap:18px}
+@media(max-width:520px){.chronic ol{columns:1}}
+.chronic li{margin-bottom:4px;font-family:var(--mono);font-size:12px}
+footer{margin-top:26px;font-size:12px;color:var(--muted);
+  border-top:var(--line-thin);padding-top:12px}
+
+.dial{margin-bottom:22px;padding:18px}
+.ctrls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;
+  margin-bottom:16px}
+@media(max-width:700px){.ctrls{grid-template-columns:minmax(0,1fr)}}
+.ctrl h3{margin-bottom:8px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:8px;max-width:46ch}
+.seg{display:flex;flex-wrap:wrap;gap:0;border:var(--line);width:fit-content;
+  box-shadow:var(--hard-sm);background:var(--paper)}
+.seg button{font:inherit;font-weight:700;font-size:13px;cursor:pointer;
+  padding:7px 14px;border:0;border-right:var(--line-thin);background:transparent;
+  color:var(--ink)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--ask-strong);color:var(--cream)}
+.seg button:focus-visible{outline:3px solid var(--teach);outline-offset:-3px}
+.seg.small{box-shadow:none}
+.seg.small button{padding:5px 10px;font-size:12px}
+input[type=range]{width:100%;max-width:420px;margin-top:6px;accent-color:var(--ask-strong)}
+input[type=search]{font:inherit;font-size:13px;padding:6px 10px;border:var(--line-thin);
+  background:var(--paper);color:var(--ink);min-width:0;flex:1 1 170px;max-width:240px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.check{font-size:12.5px;display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.check input{accent-color:var(--ask-strong)}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{background:var(--lav)}
+th.sortable[data-dir]::after{content:"\2191";margin-left:4px}
+th.sortable[data-dir=desc]::after{content:"\2193"}
+.empty{font-size:13px;color:var(--muted);margin-top:10px}
+.tile.hero{background:var(--teach-soft)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+</style>
+</head>
+<body>
+<p id="err" hidden></p>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Network Decline Watch</h1>
+    <p class="lede">Which parts of New South Wales are most likely to lose mobile
+    download speed and not get it back. Ranked from public Ookla speed tests,
+    2019&ndash;2026.</p>
+  </div>
+  <div class="stamp"><span>Measured to</span><b id="quarter">&mdash;</b></div>
+</header>
+
+<section class="box dial">
+  <div class="ctrls">
+    <div class="ctrl">
+      <h3>Looking ahead</h3>
+      <div class="seg" id="leadSeg" role="group" aria-label="How many quarters ahead">
+        <button type="button" data-lead="1">1 qtr</button>
+        <button type="button" data-lead="2">2 qtr</button>
+        <button type="button" data-lead="3">3 qtr</button>
+        <button type="button" data-lead="4">4 qtr</button>
+      </div>
+      <p class="hint" id="leadHint">&mdash;</p>
+    </div>
+    <div class="ctrl">
+      <h3>What a missed decline costs</h3>
+      <input type="range" id="ratio" min="2" max="100" step="1" value="20"
+             aria-describedby="ratioHint">
+      <p class="hint" id="ratioHint">In units of one inspection. Drag it to the
+        number your team would defend; the budget follows.</p>
+    </div>
+  </div>
+  <p class="warnbar" id="noBudget" hidden></p>
+  <div class="readout">
+    <div class="tile"><b class="num" id="rOut">20&times;</b><span>cost ratio</span></div>
+    <div class="tile hero"><b class="num" id="bOut">20%</b><span>inspect</span></div>
+    <div class="tile"><b class="num" id="nOut">19</b><span>regions</span></div>
+    <div class="tile"><b class="num" id="fOut">80%</b><span>of declines caught</span></div>
+    <div class="tile"><b class="num" id="sOut">61%</b><span>cheaper than doing nothing</span></div>
+  </div>
+</section>
+
+<section class="box panel" style="margin-bottom:18px">
+  <div class="panel-head"><h2>Where they are</h2>
+    <span class="chip ghost" id="mapCount">&mdash;</span></div>
+  <svg id="map" viewBox="0 0 900 400" role="img"
+       aria-label="New South Wales with one square per 8 km region, and a magnified window over the Sydney basin"></svg>
+  <div class="legend">
+    <span><i style="background:var(--danger)"></i>inside the budget</span>
+    <span><i style="background:var(--teach)"></i>steep fall expected</span>
+    <span><i style="background:var(--paper);border-style:dashed"></i>below the line</span>
+    <span><i style="border-color:var(--ask-strong);border-style:dashed;background:transparent"></i>enlarged at right</span>
+  </div>
+  <p class="map-note">One square is one region: an 8&nbsp;km quadkey tile, the unit
+    Ookla publishes. Half of them sit inside the dashed box, so that box is drawn
+    again, enlarged, at the right. The faint squares on the state map are those
+    same regions in their true places. Regional New South Wales is empty because
+    it has too few tests to model, not because it is healthy.</p>
+</section>
+
+<section class="box panel">
+  <div class="panel-head"><h2>Inspection order</h2>
+    <span class="chip ghost" id="shown">&mdash;</span></div>
+  <div class="filters">
+    <input type="search" id="q" placeholder="Find a region id" aria-label="Find a region id">
+    <div class="seg small" id="areaSeg" role="group" aria-label="Area type">
+      <button type="button" data-area="all">All areas</button>
+      <button type="button" data-area="urban">Urban</button>
+      <button type="button" data-area="outer">Outer</button>
+    </div>
+    <label class="check"><input type="checkbox" id="onlyBudget"> Only the budget</label>
+    <label class="check"><input type="checkbox" id="onlySteep"> Steep falls</label>
+    <label class="check"><input type="checkbox" id="onlyChronic"> Repeat offenders</label>
+  </div>
+  <div class="list">
+    <table>
+      <thead><tr>
+        <th data-sort="rank" class="sortable">#</th>
+        <th data-sort="id" class="sortable">Region</th>
+        <th data-sort="area" class="sortable">Area</th>
+        <th data-sort="mbps" class="sortable r">Mbps</th>
+        <th data-sort="exp" class="sortable r">Expected</th>
+        <th data-sort="falls" class="sortable r">Falls</th>
+        <th>Flags</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <p class="empty" id="empty" hidden>Nothing matches those filters.</p>
+</section>
+
+<section class="box detail" id="detail" hidden>
+  <div class="panel-head">
+    <h2 id="dTitle">&mdash;</h2>
+    <span class="chip" id="dRank">&mdash;</span>
+  </div>
+  <div class="stats" id="dStats"></div>
+  <svg id="spark" viewBox="0 0 560 160" role="img"
+       aria-label="Download speed for the selected region, quarter by quarter"></svg>
+  <div class="legend">
+    <span><i style="background:var(--locked)"></i>measured median</span>
+    <span><i style="background:var(--ask-strong)"></i>after shrinking toward its own history</span>
+    <span><i style="background:var(--danger)"></i>expected level ahead</span>
+  </div>
+</section>
+
+<div class="cols">
+  <section class="box panel chronic">
+    <div class="panel-head"><h2>Send an engineer, not a crew</h2>
+      <span class="chip warn" id="cCount">&mdash;</span></div>
+    <p class="hint">These regions have fallen three times or more. Across the whole
+      record, repeat offenders produce 38% of all declines. Inspecting them again
+      answers the wrong question: they need capacity planning.</p>
+    <ol id="chronic"></ol>
+  </section>
+
+  <section class="box panel truth">
+    <div class="panel-head"><h2>What this cannot tell you</h2>
+      <span class="chip bad">read first</span></div>
+    <ul id="truth"></ul>
+  </section>
+</div>
+
+<footer>
+  Ookla for Good open data, CC BY-NC-SA 4.0, aggregated to quadkey zoom 12 and
+  clipped to the New South Wales boundary. Built for ENGG2112, University of
+  Sydney. Figures rest on 10&ndash;17 declines per horizon across the
+  2024&ndash;2026 test years and are indicative, not precise.
+</footer>
+</div>
+
+<script>
+let D=null;
+async function boot(){
+  D = await fetch('data.json').then(r=>r.json());
+  const M=D.meta, ST=D.static, LEADS=D.leads, H=D.history, OUT=D.outline;
+  const NS="http://www.w3.org/2000/svg";
+  const el=id=>document.getElementById(id);
+  const mk=(n,a)=>{const e=document.createElementNS(NS,n);
+    for(const k in a)e.setAttribute(k,a[k]);return e;};
+  const pct=v=>Math.round(v*100)+"%";
+  el("quarter").textContent=M.quarter;
+
+  const S={lead:1,ratio:20,area:"all",q:"",onlyBudget:false,onlySteep:false,
+           onlyChronic:false,sort:"rank",dir:"asc",picked:null,budget:0.2,inBudget:new Set()};
+
+  const rowsFor=lead=>LEADS[lead].regions.map(r=>Object.assign({},ST[r.id],r));
+
+  /* ---- the budget is whatever is cheapest at this cost ratio, for this horizon ---- */
+  function solveBudget(){
+    const L=LEADS[S.lead], n=L.regions.length;
+    const per=L.events/Math.max(1,L.quarters);        // declines in an average quarter
+    let best=0,bestCost=Infinity;
+    L.curve.forEach((rec,i)=>{
+      const b=i/100, cost=b*n + S.ratio*per*(1-rec);
+      if(cost<bestCost){bestCost=cost;best=b;}
+    });
+    const nothing=S.ratio*per;
+    S.budget=best;
+    const k=Math.round(best*n);
+    S.inBudget=new Set(rowsFor(S.lead).slice(0,k).map(r=>r.id));
+    el("rOut").textContent=S.ratio+"×";
+    el("bOut").textContent=pct(best);
+    el("nOut").textContent=k;
+    el("fOut").textContent=pct(L.curve[Math.round(best*100)]||0);
+    el("sOut").textContent=k===0?"—":pct(1-bestCost/nothing);
+    el("mapCount").textContent=k+" of "+n+" flagged";
+    el("leadHint").textContent="Trained on "+L.events+" declines in the test years. "+
+      "Every horizon is about equally accurate, so this chooses how far ahead to "+
+      "plan — it is not a timetable.";
+    const none=el("noBudget");
+    none.hidden=k>0;
+    if(k===0)none.textContent="At "+S.ratio+"\u00d7, inspecting nothing is the "+
+      "cheapest policy. "+S.lead+" quarters out there are about "+per.toFixed(1)+
+      " declines in an average quarter, so visiting "+Math.round(0.15*n)+
+      " regions to find them costs more than the declines do. Raise the price "+
+      "of a miss, or look closer ahead.";
+  }
+
+  /* ---- map: state, plus a window over the half that sits in Sydney ---- */
+  const WIN=M.window;
+  const inWin=r=>r.lon>=WIN[0]&&r.lon<=WIN[2]&&r.lat>=WIN[1]&&r.lat<=WIN[3];
+  const lons=OUT.map(p=>p[0]),lats=OUT.map(p=>p[1]);
+  const SLO=[Math.min(...lons),Math.min(...lats)],SHI=[Math.max(...lons),Math.max(...lats)];
+  const narrow=()=>window.matchMedia("(max-width: 700px)").matches;
+  const frame=(w,h,pad,lo,hi)=>{const s=Math.min((w-2*pad)/(hi[0]-lo[0]),(h-2*pad)/(hi[1]-lo[1]));
+    return {s,ox:(w-(hi[0]-lo[0])*s)/2,oy:(h-(hi[1]-lo[1])*s)/2,lo,h};};
+  const fx=(lon,f)=>f.ox+(lon-f.lo[0])*f.s;
+  const fy=(lat,f)=>f.h-f.oy-(lat-f.lo[1])*f.s;
+
+  function cell(x,y,size,r,parent,faint){
+    const hot=S.inBudget.has(r.id), on=S.picked===r.id;
+    const g=mk("rect",{x:(x-size/2).toFixed(1),y:(y-size/2).toFixed(1),
+      width:size,height:size,class:"cell",tabindex:faint?"-1":"0",role:"button",
+      "data-id":r.id,fill:hot?"var(--danger)":(r.steep?"var(--teach)":"var(--paper)"),
+      stroke:on?"var(--ask-strong)":"var(--ink)","stroke-width":on?3:(hot?1.6:1),
+      "stroke-dasharray":(hot||r.steep)?"none":"2 1.5",opacity:faint?".3":"1"});
+    const t=mk("title",{});t.textContent="#"+r.rank+"  "+r.id+"  "+
+      r.mbps.toFixed(0)+" Mbps  expected "+(r.exp*100).toFixed(1)+"%";
+    g.appendChild(t);
+    if(!faint){
+      g.addEventListener("click",()=>select(r.id));
+      g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){
+        e.preventDefault();select(r.id);}});
+    }
+    parent.appendChild(g);
+  }
+  function label(s,x,y,parent,color){
+    const t=mk("text",{x,y,"font-size":"10","font-family":"var(--mono)",
+      fill:color||"var(--muted)","letter-spacing":".06em"});
+    t.textContent=s;parent.appendChild(t);
+  }
+
+  function paintMap(){
+    const svg=el("map");svg.textContent="";
+    const tall=narrow(), VW=tall?400:900, VH=tall?660:400;
+    svg.setAttribute("viewBox","0 0 "+VW+" "+VH);
+    const R=rowsFor(S.lead);
+    const sw=tall?VW:400, sh=tall?320:VH;
+    const A=frame(sw,sh,16,SLO,SHI);
+    const g1=mk("g",{});svg.appendChild(g1);
+    g1.appendChild(mk("polygon",{points:OUT.map(p=>fx(p[0],A).toFixed(1)+","+
+      fy(p[1],A).toFixed(1)).join(" "),fill:"var(--sunken)",stroke:"var(--ink)",
+      "stroke-width":2,"stroke-linejoin":"miter"}));
+    g1.appendChild(mk("rect",{x:fx(WIN[0],A).toFixed(1),y:fy(WIN[3],A).toFixed(1),
+      width:((WIN[2]-WIN[0])*A.s).toFixed(1),height:((WIN[3]-WIN[1])*A.s).toFixed(1),
+      fill:"none",stroke:"var(--ask-strong)","stroke-width":2.5,"stroke-dasharray":"5 3"}));
+    R.forEach(r=>cell(fx(r.lon,A),fy(r.lat,A),6,r,g1,inWin(r)));
+    label("NEW SOUTH WALES",14,18,g1);
+
+    const bx=tall?0:440, by=tall?340:0, bw=tall?VW:460, bh=tall?320:VH;
+    const g2=mk("g",{transform:"translate("+bx+","+by+")"});svg.appendChild(g2);
+    g2.appendChild(mk("rect",{x:1,y:1,width:bw-2,height:bh-2,fill:"var(--paper-warm)",
+      stroke:"var(--ask-strong)","stroke-width":2.5}));
+    const B=frame(bw,bh,26,[WIN[0],WIN[1]],[WIN[2],WIN[3]]);
+    const here=R.filter(inWin);
+    here.forEach(r=>cell(fx(r.lon,B),fy(r.lat,B),13,r,g2,false));
+    label("SYDNEY AND THE COAST  ×"+(B.s/A.s).toFixed(0)+"  ·  "+here.length+
+      " regions",14,18,g2,"var(--ask-strong)");
+    if(!tall)[[WIN[3],0],[WIN[1],VH]].forEach(([lat,yEnd])=>{
+      svg.appendChild(mk("line",{x1:fx(WIN[2],A).toFixed(1),y1:fy(lat,A).toFixed(1),
+        x2:bx,y2:yEnd,stroke:"var(--ask-strong)","stroke-width":1.4,"stroke-dasharray":"4 3"}));});
+  }
+
+  /* ---- list ---- */
+  function visible(){
+    let rows=rowsFor(S.lead);
+    if(S.area!=="all")rows=rows.filter(r=>r.area===S.area);
+    if(S.q)rows=rows.filter(r=>r.id.indexOf(S.q)>=0);
+    if(S.onlyBudget)rows=rows.filter(r=>S.inBudget.has(r.id));
+    if(S.onlySteep)rows=rows.filter(r=>r.steep);
+    if(S.onlyChronic)rows=rows.filter(r=>r.chronic);
+    const dir=S.dir==="asc"?1:-1, k=S.sort;
+    return rows.sort((a,b)=>{
+      const x=a[k],y=b[k];
+      return (typeof x==="string"?x.localeCompare(y):x-y)*dir;});
+  }
+  function paintRows(){
+    const rows=visible(),tb=el("rows");tb.textContent="";
+    el("shown").textContent=rows.length+" of "+rowsFor(S.lead).length;
+    el("empty").hidden=rows.length>0;
+    rows.forEach(r=>{
+      const tr=document.createElement("tr");tr.dataset.id=r.id;
+      if(!S.inBudget.has(r.id))tr.className="out";
+      if(S.picked===r.id)tr.classList.add("on");
+      const flags=[];
+      if(r.steep)flags.push('<span class="chip warn">steep</span>');
+      if(r.chronic)flags.push('<span class="chip bad">repeat</span>');
+      tr.innerHTML='<td class="r">'+r.rank+"</td><td>"+r.id+"</td><td>"+r.area+
+        '</td><td class="r">'+r.mbps.toFixed(0)+'</td><td class="r">'+
+        (r.exp*100).toFixed(1)+'%</td><td class="r">'+r.falls+"</td><td>"+
+        (flags.join(" ")||'<span style="color:var(--muted)">—</span>')+"</td>";
+      tr.addEventListener("click",()=>select(r.id));
+      tb.appendChild(tr);
+    });
+  }
+
+  /* ---- detail ---- */
+  function select(id){
+    S.picked=id;
+    const r=rowsFor(S.lead).find(x=>x.id===id), h=H[id];
+    el("detail").hidden=false;
+    el("dTitle").textContent="Region "+id;
+    el("dRank").textContent="#"+r.rank+" of "+rowsFor(S.lead).length;
+    el("dStats").innerHTML=[["now",r.mbps.toFixed(0)+" Mbps"],
+      ["shrunk",r.sm.toFixed(0)+" Mbps"],["tests",r.tests],
+      ["expected in "+S.lead+" qtr",(r.exp*100).toFixed(1)+"%"],
+      ["past falls",r.falls],["area",r.area]]
+      .map(([k,v])=>'<span class="chip">'+k+' <b class="num">'+v+"</b></span>").join("");
+    spark(h,r);paintRows();paintMap();
+  }
+  function spark(h,r){
+    const svg=el("spark");svg.textContent="";
+    const w=560,ht=160,p={l:44,r:48,t:14,b:28},n=h.q.length;
+    const proj=r.sm*(1+r.exp);
+    const max=Math.max(...h.raw,...h.sm,proj)*1.08;
+    const X=i=>p.l+i*(w-p.l-p.r)/Math.max(1,n-1+S.lead);
+    const Y=v=>ht-p.b-v/max*(ht-p.t-p.b);
+    [0,max/2,max].forEach(v=>{
+      svg.appendChild(mk("line",{x1:p.l,x2:w-p.r,y1:Y(v).toFixed(1),y2:Y(v).toFixed(1),
+        stroke:"var(--sunken)","stroke-width":1}));
+      const t=mk("text",{x:p.l-6,y:(Y(v)+4).toFixed(1),"text-anchor":"end",
+        "font-size":"10",fill:"var(--muted)","font-family":"var(--mono)"});
+      t.textContent=Math.round(v);svg.appendChild(t);});
+    const line=(pts,color,dash,width)=>svg.appendChild(mk("polyline",{
+      points:pts.join(" "),fill:"none",stroke:color,"stroke-width":width,
+      "stroke-dasharray":dash,"stroke-linejoin":"miter"}));
+    line(h.raw.map((v,i)=>X(i).toFixed(1)+","+Y(v).toFixed(1)),"var(--locked)","3 2","1.5");
+    line(h.sm.map((v,i)=>X(i).toFixed(1)+","+Y(v).toFixed(1)),"var(--ask-strong)","none","2.5");
+    const last=n-1, px=X(last+S.lead);
+    line([X(last).toFixed(1)+","+Y(h.sm[last]).toFixed(1),px.toFixed(1)+","+Y(proj).toFixed(1)],
+      "var(--danger)","4 3","2.5");
+    svg.appendChild(mk("rect",{x:px-4,y:Y(proj)-4,width:8,height:8,fill:"var(--danger)",
+      stroke:"var(--ink)","stroke-width":1.5}));
+    const t=mk("text",{x:px+8,y:Y(proj)+4,"font-size":"10",fill:"var(--danger)",
+      "font-family":"var(--mono)"});
+    t.textContent="+"+S.lead+"q";svg.appendChild(t);
+    [0,Math.floor(last/2),last].forEach(i=>{
+      const q=mk("text",{x:X(i).toFixed(1),y:ht-8,"text-anchor":i===0?"start":"middle",
+        "font-size":"10",fill:"var(--muted)","font-family":"var(--mono)"});
+      q.textContent=h.q[i];svg.appendChild(q);});
+  }
+
+  /* ---- the two lists that are not a ranking ---- */
+  el("truth").innerHTML=M.honesty.concat([
+    "Four quarters ahead scores as well as one, so this recognises a standing "+
+    "condition rather than a developing fault. It says which regions, never when."
+  ]).map(s=>"<li>"+s+"</li>").join("");
+  const chronic=Object.entries(ST).filter(([,v])=>v.chronic);
+  el("cCount").textContent=chronic.length+" regions";
+  el("chronic").innerHTML=chronic.sort((a,b)=>b[1].falls-a[1].falls)
+    .map(([id,v])=>"<li>"+id+" — "+v.falls+" falls</li>").join("");
+
+  /* ---- wiring ---- */
+  function redraw(){solveBudget();paintMap();paintRows();}
+  function seg(id,key,cast){
+    const box=el(id);
+    box.addEventListener("click",e=>{
+      const b=e.target.closest("button");if(!b)return;
+      S[key]=cast(b.dataset[key==="lead"?"lead":"area"]);
+      [...box.children].forEach(c=>c.setAttribute("aria-pressed",c===b));
+      if(key==="lead"){redraw();if(S.picked)select(S.picked);}else paintRows();
+    });
+    [...box.children].forEach((c,i)=>c.setAttribute("aria-pressed",i===0));
+  }
+  seg("leadSeg","lead",Number);
+  seg("areaSeg","area",String);
+  el("ratio").addEventListener("input",e=>{S.ratio=+e.target.value;redraw();});
+  el("q").addEventListener("input",e=>{S.q=e.target.value.trim();paintRows();});
+  ["onlyBudget","onlySteep","onlyChronic"].forEach(k=>
+    el(k).addEventListener("change",e=>{S[k]=e.target.checked;paintRows();}));
+  document.querySelectorAll("th.sortable").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const k=th.dataset.sort;
+      S.dir=(S.sort===k&&S.dir==="asc")?"desc":"asc";S.sort=k;
+      document.querySelectorAll("th.sortable").forEach(o=>o.removeAttribute("data-dir"));
+      th.setAttribute("data-dir",S.dir);paintRows();});
+  });
+  let rt=null;
+  window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(paintMap,150);});
+
+  redraw();
+  select(rowsFor(1)[0].id);
+}
+boot().catch(err=>{
+  document.getElementById("err").hidden = false;
+  document.getElementById("err").textContent =
+    "Could not load data.json \u2014 " + err.message;
+});
+</script>
+</body>
+</html>
