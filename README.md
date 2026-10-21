@@ -104,6 +104,9 @@ python src/clustering.py --panel data/panel_nsw.csv
 # The two rankers, scored side by side
 python src/rankers.py --panel data/panel_nsw.csv
 
+# Does it predict falls, or just movement?
+python src/symmetry.py --panel data/panel_nsw.csv
+
 # What are these declines, really?
 python src/anatomy.py --panel data/panel_nsw.csv
 
@@ -638,6 +641,34 @@ Relaxing the label to a 15% fall with no persistence requirement produces 281
 declines across 19 quarters, six times the evidence, and there the two methods
 are closest of all. The configurations that make the forest look best are the
 ones with the fewest events to be right about.
+
+### It predicts falls, not movement
+
+Everything here is framed around falls, and nothing had tested whether that
+framing does any work. A model that ranks regions by how far they sit above
+their own long-run level should also, by construction, be good at spotting
+regions about to move sharply in either direction. If it predicts rises as well
+as falls, it is a volatility detector with a sign written on it and the
+maintenance story is wrong.
+
+The same data relabelled three ways, refit each time, purged each time. Average
+precision is not comparable across rows because the base rates differ, so the
+column that matters is lift over a random ranking:
+
+| target | train events | test events | base rate | AP | lift | recall@15% |
+| --- | --- | --- | --- | --- | --- | --- |
+| **lasting fall** | 26 | 17 | 0.024 | 0.436 | **18.5x** | 0.765 |
+| lasting rise | 261 | 43 | 0.060 | 0.314 | 5.3x | 0.633 |
+| lasting move, either way | 295 | 61 | 0.085 | 0.324 | 3.8x | 0.543 |
+
+Falls are 3.5 times as findable as rises relative to how common each is, with
+ten times fewer examples to learn from. The framing is doing real work.
+
+One fact falls out of this and deserves stating on its own: the network mostly
+improves. The test years hold 43 lasting rises against 17 lasting falls. A
+maintenance tool is looking for the exception rather than the trend, and a
+reader who assumes mobile service in New South Wales is broadly deteriorating
+would be reading this project backwards.
 
 ### The declines look like real faults, and not like congestion
 
