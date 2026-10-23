@@ -141,17 +141,10 @@ def main(panel_path, split_year, out_dir, trees, seed):
         "regions": len(static),
         "coverage": "urban and outer-suburban New South Wales only",
         "honesty": [
-            "Ranks by how far a region sits above its own long-run speed. A "
-            "random forest scored no better inside an inspection budget, so the "
-            "simpler rule is the one deployed.",
-            "Predicts a fall of at least 20% that is still there a quarter "
-            "later. Two thirds of single-quarter falls undo themselves.",
-            "Regional New South Wales is absent: 94% of its region-quarters "
-            "lack the history the model needs, so this covers urban and "
-            "outer-suburban areas only.",
-            "Four quarters ahead scores as well as one, so this recognises a "
-            "standing condition rather than a developing fault. It says which "
-            "regions, never when.",
+            "Ranked by a one-parameter rule; a random forest did no better.",
+            "A decline is a 20%+ fall that lasts. Two in three short falls recover.",
+            "Urban and outer-suburban NSW only.",
+            "Shows which regions, not when. Few events: figures are rough.",
         ],
     }
 

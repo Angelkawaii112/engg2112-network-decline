@@ -197,9 +197,7 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
 <header>
   <div>
     <h1>NSW Connectivity Watch</h1>
-    <p class="lede">How healthy is mobile connectivity across New South Wales,
-    where is it failing its users, and where should limited resources go?
-    Five questions, answered from public data.</p>
+    <p class="lede">NSW mobile connectivity, from public speed tests.</p>
   </div>
   <div class="stamp"><span>Measured to</span><b id="quarter">&mdash;</b></div>
 </header>
@@ -231,8 +229,7 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
       <h3>What a missed decline costs</h3>
       <input type="range" id="ratio" min="2" max="100" step="1" value="20"
              aria-describedby="ratioHint">
-      <p class="hint" id="ratioHint">In units of one inspection. Drag it to the
-        number your team would defend; the budget follows.</p>
+      <p class="hint" id="ratioHint">One miss, counted in inspections.</p>
     </div>
   </div>
   <p class="warnbar" id="noBudget" hidden></p>
@@ -256,11 +253,7 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
     <span><i style="background:var(--paper);border-style:dashed"></i>below the line</span>
     <span><i style="border-color:var(--ask-strong);border-style:dashed;background:transparent"></i>enlarged at right</span>
   </div>
-  <p class="map-note">One square is one region: an 8&nbsp;km quadkey tile, the unit
-    Ookla publishes. Half of them sit inside the dashed box, so that box is drawn
-    again, enlarged, at the right. The faint squares on the state map are those
-    same regions in their true places. Regional New South Wales is empty because
-    it has too few tests to model, not because it is healthy.</p>
+  <p class="map-note">One square = one ~8&nbsp;km region. Empty areas have too little data, not good service.</p>
 </section>
 
 <section class="box panel">
@@ -313,9 +306,7 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
   <section class="box panel chronic">
     <div class="panel-head"><h2>Send an engineer, not a crew</h2>
       <span class="chip warn" id="cCount">&mdash;</span></div>
-    <p class="hint">These regions have fallen three times or more. Across the whole
-      record, repeat offenders produce 38% of all declines. Inspecting them again
-      answers the wrong question: they need capacity planning.</p>
+    <p class="hint">Fell 3+ times. Plan capacity, don't re-inspect.</p>
     <ol id="chronic"></ol>
   </section>
 
@@ -332,7 +323,6 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
   <section class="box intro">
     <p class="q" id="o2q">&mdash;</p>
     <p class="a" id="o2a"></p>
-    <p class="m" id="o2m"></p>
   </section>
   <div class="events" id="o2events" role="group" aria-label="Events"></div>
   <div class="two">
@@ -344,9 +334,7 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
         </div></div>
       <svg id="o2chart" viewBox="0 0 560 300" role="img"
            aria-label="Difference between touched and untouched regions, quarter by quarter"></svg>
-      <p class="hint">Each square is how far touched regions moved against untouched
-        ones, that many quarters after the event; bars are 95% intervals. Quarter
-        &minus;1 is the reference. A bar crossing zero means no detectable difference.</p>
+      <p class="hint">Touched vs comparison regions. Filled = significant.</p>
       <p class="caveat" id="o2caveat"></p>
     </section>
     <section class="box panel">
@@ -375,11 +363,9 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
 <div class="tab" id="tab-o5" hidden data-objective="o5"></div>
 
 <footer>
-  Ookla for Good open data, CC BY-NC-SA 4.0, aggregated to ~8 km regions and
-  clipped to the New South Wales boundary; other sources are listed on each page.
-  Built for ENGG2112, University of Sydney, 2026. Every figure rests on few
-  events and is indicative, not precise.
-  <a href="https://github.com/YangRenRR/engg2112-network-decline" style="color:inherit">Code and full results</a>.
+  Data: Ookla Open Data (CC BY-NC-SA 4.0) and public government sources.
+  ENGG2112, University of Sydney, 2026.
+  <a href="https://github.com/YangRenRR/engg2112-network-decline" style="color:inherit">Code and full results</a>
 </footer>
 </div>
 
@@ -419,16 +405,10 @@ async function boot(){
     el("fOut").textContent=pct(L.curve[Math.round(best*100)]||0);
     el("sOut").textContent=k===0?"—":pct(1-bestCost/nothing);
     el("mapCount").textContent=k+" of "+n+" flagged";
-    el("leadHint").textContent="Trained on "+L.events+" declines in the test years. "+
-      "Every horizon is about equally accurate, so this chooses how far ahead to "+
-      "plan — it is not a timetable.";
+    el("leadHint").textContent="All horizons about equally accurate.";
     const none=el("noBudget");
     none.hidden=k>0;
-    if(k===0)none.textContent="At "+S.ratio+"\u00d7, inspecting nothing is the "+
-      "cheapest policy. "+S.lead+" quarters out there are about "+per.toFixed(1)+
-      " declines in an average quarter, so visiting "+Math.round(0.15*n)+
-      " regions to find them costs more than the declines do. Raise the price "+
-      "of a miss, or look closer ahead.";
+    if(k===0)none.textContent="At "+S.ratio+"\u00d7, inspecting nothing is cheapest.";
   }
 
   /* ---- map: state, plus a window over the half that sits in Sydney ---- */
@@ -576,10 +556,7 @@ async function boot(){
   }
 
   /* ---- the two lists that are not a ranking ---- */
-  el("truth").innerHTML=M.honesty.concat([
-    "Four quarters ahead scores as well as one, so this recognises a standing "+
-    "condition rather than a developing fault. It says which regions, never when."
-  ]).map(s=>"<li>"+s+"</li>").join("");
+  el("truth").innerHTML=M.honesty.map(s=>"<li>"+s+"</li>").join("");
   const chronic=Object.entries(ST).filter(([,v])=>v.chronic);
   el("cCount").textContent=chronic.length+" regions";
   el("chronic").innerHTML=chronic.sort((a,b)=>b[1].falls-a[1].falls)
@@ -633,23 +610,14 @@ boot().catch(err=>{
   /* what each unfinished objective will show; replaced by docs/oN.json when it exists */
   const PLANNED={
     o3:{title:"Service quality and fairness",
-        question:"Is the network good enough across download, upload, latency and fixed broadband, and who is served worst by official remoteness and disadvantage?",
-        will:["Regions classed as persistently slow, recently declining, or stable and fast",
-              "What a download-only view misses: upload, latency, several measures at once",
-              "Regions where fixed and mobile broadband are both poor",
-              "Who reaches the inspection list, by ABS remoteness and SEIFA"]},
+        question:"Is the network good enough, and who is served worst?",
+        will:["Always slow vs newly declining","Upload, latency, fixed broadband","Who is served worst, by remoteness"]},
     o4:{title:"Resilience and redundancy",
-        question:"Which regions depend on a single carrier, leaving no other network to fall back on in an emergency?",
-        will:["How many carriers have a licensed site within 10 km of each region, from ACMA data",
-              "Regions served by one carrier only, and how their speeds compare",
-              "What that means for reaching Triple Zero when one network fails"]},
+        question:"Which regions have no second network to fall back on?",
+        will:["Carriers near each region","Single-carrier regions","What that means for Triple Zero"]},
     o5:{title:"Coverage gaps and satellite",
-        question:"Where is there no terrestrial mobile coverage at all, and can satellite services and the Universal Outdoor Mobile Obligation fill it?",
-        will:["Potential blind spots from the carriers' published coverage maps (ACCC)",
-              "People, roads and facilities inside them",
-              "What satellite services can actually deliver today",
-              "Remote fixed-broadband speeds before and after Starlink",
-              "Whether the UOMO is enough for NSW's blind spots"]}
+        question:"Where is there no mobile coverage, and can satellite fill it?",
+        will:["Blind spots on carrier coverage maps","Who and what is inside them","Can satellite fill them?"]}
   };
 
   const loaded={};
@@ -669,7 +637,7 @@ boot().catch(err=>{
   async function bootO2(){
     try{O2=await fetch("o2.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});}
     catch(e){$("o2q").textContent="Could not load o2.json — "+e.message;return;}
-    $("o2q").textContent=O2.question; $("o2a").textContent=O2.answer; $("o2m").textContent=O2.method;
+    $("o2q").textContent=O2.question; $("o2a").textContent=O2.answer;
     const box=$("o2events");
     O2.events.forEach((e,i)=>{
       const cls={clear:"good",none:"ghost",failed:"bad"}[e.verdict]||"";
@@ -748,9 +716,9 @@ boot().catch(err=>{
     if(!d){
       host.innerHTML='<section class="placeholder"><span class="chip ghost">In progress</span>'+
         '<h2 style="margin-top:10px">'+esc(plan.title)+'</h2><p class="intro q" style="padding:0;margin-top:8px">'+
-        esc(plan.question)+'</p><p class="hint">This page will show:</p><ul>'+
+        esc(plan.question)+'</p><ul>'+
         plan.will.map(w=>"<li>"+esc(w)+"</li>").join("")+
-        '</ul><p class="who">Results appear here once '+id+'.json is published.</p></section>';
+        '</ul></section>';
       return;
     }
     let h='<section class="box intro"><span class="chip '+(d.status==="done"?"good":"ghost")+'">'+
