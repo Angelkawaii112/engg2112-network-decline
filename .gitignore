@@ -9,3 +9,6 @@ __pycache__/
 # not published in a public repository
 notes/ai_log*.md
 ui/inspection_list.csv
+
+# TfNSW crash data, 23 MB; src/impact.py downloads it when absent
+data/crashes_*.xlsx

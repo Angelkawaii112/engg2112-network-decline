@@ -628,6 +628,49 @@ target.
 
 ## Who the system serves
 
+### Weighting by consequence: which crashes, not whether
+
+Every ranking above orders regions by how likely a lasting decline is. Risk is
+likelihood times consequence, and a decline beside a road where people are hurt
+matters more than one in an empty paddock. Road crashes stand in for one such
+consequence: someone needing to call for help. Transport for NSW publishes every
+crash with coordinates; 93,042 for 2021-2025, placed exactly into regions
+because region ids are zoom-12 quadkeys.
+
+Risk is `P(lasting decline) x (1 + crashes per year) ^ alpha`, where P is the
+rule's score calibrated to a probability on training rows, so alpha = 0 is the
+existing ranking. Scored under purged rolling origin, pooled over 13 quarters
+and 43 lasting declines, at a 15% budget:
+
+| consequence | alpha | declines found | crash-weighted share found |
+| --- | --- | --- | --- |
+| none (likelihood only) | 0 | **0.884** | 0.867 |
+| all injury crashes | 0.25 | 0.744 | 0.768 |
+| all injury crashes | 1 | 0.256 | 0.356 |
+| injury crashes on rural roads of 80 km/h+ | 0 | 0.884 | 0.748 |
+| injury crashes on rural roads of 80 km/h+ | **0.25** | 0.721 | **0.914** |
+| injury crashes on rural roads of 80 km/h+ | 1 | 0.558 | 0.899 |
+
+The first intuition is wrong. Weighting by all injury crashes makes both
+columns worse, because crash counts are mostly population density: the most
+crashes are in inner Sydney, where lasting declines are rare, so the weight
+sends crews to busy regions that were not declining. Counting only injury
+crashes on rural roads of 80 km/h or more - where a phone is often the only way
+to call for help - does what weighting is for: it gives up some declines found,
+0.884 to 0.721, to catch more of the ones that matter, 0.748 to 0.914 of the
+crash exposure behind them. Alpha 0.25 takes all of that gain; higher alpha
+only loses declines.
+
+The choice of consequence matters more than the decision to weight. The site's
+O1 page offers both orderings, likelihood and likelihood times road risk at
+alpha 0.25.
+
+Two limits. The crash years overlap the scored quarters, acceptable for a
+measure of where roads are dangerous, which barely moves in five years. And
+crashes inside tunnels, 746 of them, cannot be related to coverage at all:
+tunnel signal comes from in-tunnel systems that crowdsourced medians over an
+8 km region cannot see.
+
 ### The system excludes regional New South Wales before it predicts anything
 
 The earlier version of this section reported a recall of 0.00 across ten
