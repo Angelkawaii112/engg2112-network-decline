@@ -24,38 +24,23 @@ import event_study as es                          # noqa: E402
 EVENTS = [
     {"id": "floods", "key": "floods 2022", "name": "2022 Northern Rivers floods",
      "when": "2022 Q1", "verdict": "clear", "verdict_label": "Clear trace",
-     "finding": "In the flood quarter the seven Northern Rivers LGAs ran a third "
-                "more speed tests than other northern regions. Two quarters later "
-                "their median speed was 23% lower. Both were back on track within "
-                "about a year.",
-     "caveat": "Lismore, the worst-hit LGA, has only six regions and shows "
-               "nothing on its own. A quarterly median cannot see the days-long "
-               "outages themselves."},
+     "finding": "Tests +33% in the flood quarter. Speed -23% two quarters later. "
+                "Recovered within a year.",
+     "caveat": "Quarterly data cannot see the outages themselves."},
     {"id": "threeg", "key": "3G off, Telstra/Optus 2024 Q4 (rest vs city)",
      "name": "Telstra and Optus 3G switch-off", "when": "2024 Q4",
-     "verdict": "clear", "verdict_label": "Clear trace, on an assumption",
-     "finding": "Outside the cities, speeds rose 22% and 39% relative to the "
-                "cities four and five quarters after the switch-off, with no gap "
-                "beforehand.",
-     "caveat": "Every region was switched off at once, so non-city regions are "
-               "compared with cities on the untested assumption that 3G-only "
-               "devices were commoner outside them. Part of the rise may be the "
-               "slowest devices leaving the sample, and regional 4G/5G upgrades "
-               "in 2025 would look the same."},
+     "verdict": "clear", "verdict_label": "Clear, with caveat",
+     "finding": "Outside cities, speed +22% to +39% against cities a year later.",
+     "caveat": "Assumes 3G-only phones were commoner outside cities. Some of the "
+               "rise may be slow phones dropping out."},
     {"id": "towers", "key": "towers, 10 km", "name": "New Mobile Black Spot towers",
      "when": "2020 Q1 - 2025 Q2", "verdict": "none", "verdict_label": "No measurable trace",
-     "finding": "No measurable change in speed or test counts within 5, 10 or "
-                "20 km of a new tower.",
-     "caveat": "This says speed medians cannot see coverage, not that the towers "
-               "fail. They are built where there was no signal; their users are "
-               "new rather than faster. O5 measures coverage directly."},
+     "finding": "No measurable change within 5-20 km.",
+     "caveat": "Towers add coverage, which speed medians cannot see. See O5."},
     {"id": "fires", "key": "fires 2019-20", "name": "2019-20 bushfires",
      "when": "2019 Q4", "verdict": "failed", "verdict_label": "Comparison failed",
-     "finding": "Burnt regions were already moving away from the controls before "
-                "the fire season, and changing what counts as burnt flips the "
-                "sign of the result.",
-     "caveat": "Nothing here measures what the fires did. Burnt areas are mostly "
-               "forested ranges with few tests, and the outages lasted days."},
+     "finding": "Burnt regions were already diverging before the fires.",
+     "caveat": "Nothing here measures what the fires did."},
 ]
 
 
@@ -109,13 +94,10 @@ def main():
     outline = json.load(open(ROOT / "docs/data.json"))["outline"]
     out = {
         "id": "o2", "title": "Events that changed the network",
-        "question": "How did new towers, the 3G switch-off, and the 2019-20 "
-                    "bushfires and 2022 floods change measured mobile performance?",
+        "question": "What did new towers, the 3G switch-off, fires and floods do to the network?",
         "owner": "Renyu Yang", "status": "done",
-        "answer": "Only two events leave a clear trace in quarterly data: the 2022 "
-                  "floods and the Telstra/Optus 3G switch-off. New towers leave none "
-                  "that speed medians can see, and the bushfire comparison fails "
-                  "its own check.",
+        "answer": "Floods and the 3G switch-off left a clear trace. New towers left none "
+                  "we can see. The fire comparison failed.",
         "method": "Event study with region and quarter fixed effects: touched "
                   "regions against untouched ones, quarter by quarter, relative to "
                   "the quarter before the event. Bars are 95% intervals. A result "
@@ -123,10 +105,9 @@ def main():
         "events": events,
         "outline": outline,
         "limits": [
-            "Quarterly medians cannot see outages that last days.",
-            "Few touched regions: 22 near towers, 31 burnt, 40 flooded.",
-            "Who runs tests changes with events, so a change in median speed is "
-            "partly a change in who is measuring.",
+            "Quarterly data misses short outages.",
+            "Few regions per event.",
+            "Who runs tests changes during events.",
         ],
         "sources": [
             {"name": "Mobile Black Spot Program sites",
