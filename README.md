@@ -95,6 +95,9 @@ python src/costs.py --panel data/panel_nsw.csv
 # How far ahead does this still work?
 python src/horizon.py --panel data/panel_nsw.csv
 
+# Once a region has fallen, will it come back on its own?
+python src/recovery.py --panel data/panel_nsw.csv
+
 # What happens after a region falls?
 python src/persistence.py --panel data/panel_nsw.csv
 
@@ -821,6 +824,40 @@ problem rather than an event, and sending a crew to the same place five times
 is the wrong response. A deployed system should separate them out: inspect the
 one-off falls, and put the repeat offenders on a list for capacity planning
 instead.
+
+### Which falls will undo themselves is predictable, and here the forest wins
+
+Two thirds of falls recover within a quarter, so the question a dispatcher
+actually has at the moment a fall is first seen is not whether it happened but
+whether it will stay. Every fall becomes a row, described as it looked the
+quarter it was first seen and labelled by whether the region was back within 20%
+of its pre-fall level a quarter later. Scored year by year, purged as everywhere
+else:
+
+| year | falls | recovered | AP forest | AP rule | top third, forest | top third, rule |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2022 | 39 | 64% | **0.82** | 0.77 | 85% | 85% |
+| 2023 | 21 | 48% | **0.75** | 0.67 | **86%** | 71% |
+| 2024 | 21 | 52% | **0.75** | 0.73 | 71% | 71% |
+| 2025 | 15 | 53% | **0.88** | 0.79 | **100%** | 80% |
+
+Weighted over 96 falls the forest reaches 0.800 against 0.743 for the obvious
+rule, that small falls recover, and 0.562 for guessing. It is ahead of the rule
+in all four years. Predicting falls, it never once managed that against mean
+reversion.
+
+That asymmetry is the finding. Whether a region falls is mostly one number, how
+far it sits above its own long-run level, so a one-parameter rule is enough.
+Whether it recovers depends on several things at once: how far it fell, how
+volatile it has been, latency, the two quarters before. That is the shape of
+problem a tree ensemble is for, and the only place in this project where the
+extra model clearly pays for itself.
+
+Operationally it is the other half of the inspection list: the falls a crew
+should not be sent to. Of the third the forest is most confident will recover,
+84% do. Every year's test set is small, 15 to 39 falls, so the top-third
+comparison moves by whole regions; the average-precision result is the steadier
+of the two.
 
 ### Declines do not cluster in space
 
