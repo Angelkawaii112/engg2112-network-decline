@@ -10,34 +10,52 @@ Renyu Yang · Jingwei Qiu · Ying Xiao · Xiangbin Chen
 
 ## Problem
 
-Mobile network maintenance is mostly reactive: faults are fixed after they
-appear, and maintenance attention tends to follow population density rather
-than need. Regional and remote areas already have weaker coverage, and network
-failures matter most during emergencies.
+Mobile network maintenance is mostly reactive: problems are fixed after users
+notice them, and attention tends to follow population density rather than need.
+A network operator, regulator or council outside the carrier cannot see the
+carrier's own telemetry, so this project asks what public, crowdsourced speed
+tests can support instead.
 
-## What we build
+## What this is, in one paragraph
 
-A classifier that predicts, for each region, whether median mobile download
-speed will fall by more than 20% in the following quarter. Regions are then
-ranked by predicted probability to produce a maintenance priority list.
+A ranking of New South Wales regions by the risk of a **lasting decline** in
+median mobile download speed: a fall of at least 20% that is still present a
+quarter later. The output is a list of places to **investigate**, not a list of
+faults. Crowdsourced tests can show that a region's measured performance has
+dropped and stayed down; only someone on site can say why. The ranking covers
+**urban and outer-suburban New South Wales only**. Regional areas lack the test
+history the method needs, 94% of their region-quarters are dropped before
+modelling, and they need scheduled inspection or other data rather than this.
+
+## What it does
 
 ```
-Ookla speeds + BoM weather + ABS population
-        -> features per region per quarter
-        -> Random Forest classifier
-        -> probability of significant decline
-        -> maintenance priority ranking
+Ookla quarterly tiles, clipped to the NSW boundary
+  -> aggregated to ~8 km regions (quadkey zoom 12)
+  -> each region's speed shrunk toward its own history, by test count
+  -> ranked by how far it sits above its own long-run level   (mean reversion)
+  -> random forest flags the regions likely to fall furthest,
+     and separately predicts which falls will recover on their own
+  -> inspection list, sized by what a missed decline costs
 ```
+
+The default ranker is the one-parameter rule, not the random forest. That was
+not the plan; the evidence for the change is in the findings below, summarised
+in [How the proposal became this](#how-the-proposal-became-this).
 
 ## Data
 
-| Data | Source | Granularity | Licence |
+| Data | Source | Used for | Licence |
 |---|---|---|---|
-| Mobile download/upload speed, latency, tests | [Ookla Open Data](https://github.com/teamookla/ookla-open-data) | Quarterly, ~600 m tile | CC BY-NC-SA 4.0 |
-| Temperature, rainfall | [Open-Meteo historical archive](https://open-meteo.com/) | Daily, any coordinate | Open |
-| Population | Australian Bureau of Statistics | Annual, by SA2 | Open |
+| Download, upload, latency, tests, devices | [Ookla Open Data](https://github.com/teamookla/ookla-open-data), quarterly ~600 m tiles | the panel, aggregated to ~8 km regions | CC BY-NC-SA 4.0 |
+| State boundaries | ABS-derived, [rowanhogan/australian-states](https://github.com/rowanhogan/australian-states) | clipping to NSW | open |
+| SA2 boundaries, ASGS 2021 | ABS map service | matching regions to SA2s | CC BY 4.0 |
+| SEIFA 2021, IRSD by SA2 | ABS | the equity analysis | CC BY 4.0 |
+| Estimated resident population by SA2 | ABS | the population experiment; **tested, no effect** | CC BY 4.0 |
+| Temperature, rainfall, wind | [Open-Meteo](https://open-meteo.com/) archive | weather features; **tested, no effect** | open |
+| Individual speed tests | [M-Lab NDT](https://www.measurementlab.net/) | daily robustness check; **not in the model** | CC0 |
 
-Ookla tiles are available from **2019 Q1 to 2026 Q1** (28 quarters). Files are
+Ookla tiles are available from **2019 Q1 to 2026 Q1** (29 quarters). Files are
 queried remotely with DuckDB rather than downloaded in full.
 
 ## Setup
@@ -103,6 +121,9 @@ python src/persistence.py --panel data/panel_nsw.csv
 
 # Do declines cluster in space?
 python src/clustering.py --panel data/panel_nsw.csv
+
+# Five other ways of training, against the rule
+python src/methods.py --panel data/panel_nsw.csv
 
 # The two rankers, scored side by side
 python src/rankers.py --panel data/panel_nsw.csv
@@ -172,6 +193,49 @@ nothing, and the page says so in those words. Four quarters out there are about
 2.5 lasting declines in an average quarter, so at a low price for a miss the
 visits cost more than the declines do. That is the model's honest answer and
 not a failure of it.
+
+## How the proposal became this
+
+Each row is one change from the proposal, the problem that forced it, and where
+the evidence sits.
+
+| Plan | Problem found | Change | Evidence |
+| --- | --- | --- | --- |
+| Model individual ~600 m tiles | Only 481 tiles appear in two consecutive quarters; 86 with 30+ tests | Aggregate to ~8 km regions | [Aggregation is required](#aggregation-is-required-not-optional) |
+| Cut NSW out with a bounding box | 313 of 768 regions were in Victoria, Queensland, SA or the ACT; the first ranking's top region was near Melbourne | Point-in-polygon against the state boundary | [boundary.py](src/boundary.py) |
+| Predict a >20% fall next quarter | Most such falls are sampling noise; the forest could not beat a one-parameter rule | Shrink each region toward its own history; label only falls that last | [Measuring before predicting](#measuring-before-predicting-is-what-made-the-model-useful) |
+| Weather as a driver (BoM) | BoM blocks automated access; Open-Meteo weather adds nothing, quarterly or daily | Dropped | [Weather adds nothing](#weather-adds-nothing-at-this-granularity), [daily check](#the-daily-check-confirms-both-quarterly-conclusions) |
+| Population as a driver (ABS) | Growth adds nothing; device growth is identical in declining and other regions | Dropped | [Census population](#census-population-growth-does-not-help-either) |
+| Random forest as the model | Under rolling origin it trails the simple rule inside a 15% budget, at every threshold tested | Rule ranks; forest flags steep falls and predicts recovery | [Two rankers](#two-rankers-and-the-simpler-one-ships) |
+| One train/test split | 17 events; training rows were labelled with test-period data | Purged rolling origin is the evaluation of record | [Purging](#the-training-set-was-leaking-into-the-test-years) |
+| Serve regional NSW | 94% of regional region-quarters lack the history the method needs | Coverage stated as urban and outer-suburban; regional left to scheduled inspection | [Coverage](#the-system-excludes-regional-new-south-wales-before-it-predicts-anything) |
+
+## How far these evaluations can be trusted
+
+Three limits apply to every figure below and are stated once here rather than
+repeated.
+
+**The evidence is thin.** The single split has 17 lasting declines; rolling
+origin has 43 across 13 quarters, two to five in each. One region changing rank
+moves a quarter's recall by tens of percentage points. Figures are given to
+three decimals for reproducibility, not because the third decimal means
+anything.
+
+**The test years were looked at many times.** Weather, neighbours, national
+adjustment, device and population features, five model families, six label
+thresholds and four horizons were all scored on the same 2021–2026 quarters,
+and decisions were made from those scores. That is model selection on the test
+period. The results are an evaluation of the methods on the data available, not
+an independent final validation; a quarter Ookla has not yet published is the
+only test this project could not have tuned against.
+
+**The labels are measured performance, not confirmed faults.** A lasting decline
+is a lasting drop in a crowdsourced median. Upload falling with download in 86%
+of cases argues that most are real changes in the link, but a quarter of them
+coincide with the number of tests halving, and nothing here can separate a
+degraded cell from a thinner sample of it. Only an on-site inspection turns a
+flagged region into a fault, and only those inspection outcomes could train a
+model on faults rather than on medians.
 
 ## Reproducing the figures
 
@@ -443,6 +507,13 @@ training window keeps sliding. The check that matters is whether this quarter's
 ranking resembles last quarter's: a list that reshuffles completely is evidence
 that the measurement changed, not that the network did.
 
+The label costs time in deployment as well as in evaluation. A lasting decline
+is only confirmed two quarters after the quarter that predicts it, so a ranking
+issued for 2026 Q2 cannot be scored until 2026 Q4 data is published, and the
+model is always trained on outcomes at least two quarters old. That is the
+price of not dispatching on noise: two thirds of single-quarter falls undo
+themselves, so a label that waited less would mostly be labelling recoveries.
+
 The ranking is a priority order for inspection, not a decision. A crew confirms
 or dismisses what it finds, and those outcomes are the only labels that
 describe real faults rather than movements in a crowdsourced median.
@@ -676,7 +747,7 @@ maintenance tool is looking for the exception rather than the trend, and a
 reader who assumes mobile service in New South Wales is broadly deteriorating
 would be reading this project backwards.
 
-### The declines look like real faults, and not like congestion
+### The declines are whole-link degradations, not measurement artefacts or congestion
 
 Everything above predicts these events without ever checking what they are. A
 fall in a crowdsourced download median could be a degraded cell, or the same
@@ -897,6 +968,25 @@ simpler thing wins. `src/rankers.py` holds both behind one interface, and the
 pipeline deploys mean reversion by default. It has one fitted number, cannot
 drift, retrains in microseconds, and fits in a sentence an operations team can
 check.
+
+Five other ways of training were tried before settling on that, scored the
+same way, purged rolling origin over 13 quarters and 43 lasting declines:
+
+| method | AP | recall@10% | recall@15% | vs rule at 15%, by quarter |
+| --- | --- | --- | --- | --- |
+| **simple rule** | 0.443 | 0.585 | **0.863** | – |
+| random forest | 0.492 | **0.801** | 0.801 | 1 won, 4 lost |
+| gradient boosting | 0.448 | 0.544 | 0.745 | 1 won, 6 lost |
+| logistic, all features | 0.436 | 0.664 | 0.819 | 1 won, 3 lost |
+| logistic, rule + 2 terms | 0.305 | 0.456 | 0.635 | 0 won, 7 lost |
+| blend of rule and forest ranks | **0.502** | 0.778 | 0.847 | 1 won, 2 lost |
+
+None finds more lasting declines than the rule inside a 15% budget. At a 10%
+budget the forest finds far more, 0.80 against 0.59. So the right ranker
+depends on how many regions can be visited: the forest when only a handful can,
+the rule at 15% and above. That is the cost analysis's conclusion reached from
+the other side, and the site's cost slider is how a user would choose between
+them.
 
 The forest is kept for the one thing it was shown to do better. On the largest
 moves it is 27% closer than the simple rule and right four times in five, so
