@@ -21,7 +21,7 @@ cannot. This project asks what public, crowdsourced speed tests can tell them.
 | | Objective | Question | Status |
 | --- | --- | --- | --- |
 | **O1** | Predict | Which regions face a lasting decline, and how far can that ranking be trusted? | done |
-| **O2** | Change | How did new towers, the 3G switch-off, and bushfires and floods change performance? | in progress |
+| **O2** | Change | How did new towers, the 3G switch-off, and bushfires and floods change performance? | [done](experiments/events/README.md) |
 | **O3** | Quality and fairness | Is the network good enough, and who is served worst? | in progress |
 | **O4** | Resilience | Which regions depend on a single carrier, with no fallback in an emergency? | in progress |
 | **O5** | Gaps | Where is there no terrestrial coverage, and can satellite fill it? | in progress |

@@ -1,0 +1,15 @@
+event,treated regions,control regions,"pre-trend (k=-4..-2), %","short run (k=0..1), %","longer run (k=2..6), %",any short-run k significant,outcome
+"towers, 10 km",22,393,13.2,9.8,-1.3,False,log_speed
+"towers, 10 km",22,393,-11.7,-13.0,-24.0,False,log_tests
+"towers, 5 km (check)",5,437,68.7,7.8,55.7,False,log_speed
+"towers, 20 km (check)",81,264,0.3,-1.1,-3.4,False,log_speed
+fires 2019-20,31,296,18.9,26.4,56.6,False,log_speed
+fires 2019-20,31,296,-18.2,-1.9,-16.0,False,log_tests
+"fires, any burn (check)",71,296,-9.2,-12.4,2.1,False,log_speed
+floods 2022,40,119,0.8,-15.5,-7.3,False,log_speed
+floods 2022,40,119,8.5,24.7,6.8,True,log_tests
+"floods, Lismore only",6,119,12.6,3.0,-6.6,False,log_speed
+"3G off, TPG 2024 Q1 (rest vs city)",361,94,-0.2,3.5,13.7,False,log_speed
+"3G off, TPG 2024 Q1 (rest vs city)",361,94,-4.6,9.9,14.7,False,log_tests
+"3G off, Telstra/Optus 2024 Q4 (rest vs city)",361,94,-1.1,7.5,17.8,False,log_speed
+"3G off, Telstra/Optus 2024 Q4 (rest vs city)",361,94,-0.1,12.3,15.7,True,log_tests
