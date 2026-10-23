@@ -22,9 +22,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 
 from boundary import BOUNDARIES
 from horizon import label_at
+from impact import fetch_crashes, region_impact
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
 from persistence import CHRONIC, find_falls
@@ -99,6 +101,10 @@ def main(panel_path, split_year, out_dir, trees, seed):
         now["exp"] = simple.predicted_change(now)
         now["risk"] = forest.predict_proba(now[feats])[:, 1]
         now["steep"] = now.risk >= now.risk.quantile(0.75)
+        # the rule's score as a probability, fitted on training rows only, so a
+        # consequence weight can multiply it; ordering is the rule's own
+        calib = LogisticRegression().fit(train[["speed_vs_own_mean"]], train.y.astype(int))
+        now["p"] = calib.predict_proba(now[["speed_vs_own_mean"]])[:, 1]
         now = now.sort_values("exp")
         now["rank"] = range(1, len(now) + 1)
 
@@ -111,17 +117,21 @@ def main(panel_path, split_year, out_dir, trees, seed):
             "curve": recall_curve(y, simple.predicted_change(test)),
             "regions": [{"rank": int(r["rank"]), "id": str(r.region),
                          "exp": round(r.exp, 4), "risk": round(r.risk, 3),
+                         "p": round(r.p, 5),
                          "steep": bool(r.steep)} for _, r in now.iterrows()],
         }
         print(f"  lead {lead}: {len(now)} regions, {int(train.y.sum())} training "
               f"declines, {int(y.sum())} in the test years")
 
+    fetch_crashes()
+    road = region_impact()["rural_fast"]
     latest = base[base.t == base.t.max()]
     static = {str(r.region): {
         "lon": round(r.lon, 4), "lat": round(r.lat, 4), "area": r.area_type,
         "mbps": round(r.down_mbps, 1), "sm": round(r.smoothed_mbps, 1),
         "tests": int(r.tests), "falls": int(per.get(r.region, 0)),
-        "chronic": bool(per.get(r.region, 0) >= CHRONIC)}
+        "chronic": bool(per.get(r.region, 0) >= CHRONIC),
+        "road": round(float(road.get(int(r.region), 0.0)), 2)}
         for _, r in latest.iterrows() if str(r.region) in
         {x["id"] for x in leads[1]["regions"]}}
 
@@ -137,6 +147,7 @@ def main(panel_path, split_year, out_dir, trees, seed):
     window = dense_window([(v["lon"], v["lat"]) for v in static.values()])
     meta = {
         "quarter": quarter,
+        "impact_alpha": 0.25,
         "window": window,
         "regions": len(static),
         "coverage": "urban and outer-suburban New South Wales only",

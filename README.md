@@ -50,6 +50,7 @@ Ookla quarterly tiles, clipped to NSW
 - A **one-parameter rule beats the random forest** at that budget. Five other model types were tried; none did better. The forest wins only at tighter budgets (10%).
 - **68% of falls recover on their own** within two quarters. The ones that do not, stay down. The forest predicts which will recover better than any simple rule.
 - Declines are **real link degradations** (upload falls too in 86% of cases), not congestion and not tied to income.
+- Weighting by consequence works only with the right measure: **injury crashes on rural 80 km/h+ roads** lift the crash-weighted share of declines caught from 75% to 91%; all crashes make it worse.
 - **Regional NSW is excluded**: 94% of its data lacks the history the model needs. O3 to O5 study those areas instead.
 - Weather, neighbouring regions and census population **add nothing**.
 
@@ -65,6 +66,7 @@ Ookla quarterly tiles, clipped to NSW
 | --- | --- | --- |
 | Mobile speed, latency, tests, devices | [Ookla Open Data](https://github.com/teamookla/ookla-open-data), quarterly, 2019 Q1 – 2026 Q1 | CC BY-NC-SA 4.0 |
 | State and SA2 boundaries, SEIFA, population | Australian Bureau of Statistics | CC BY 4.0 |
+| Road crashes, 2021–2025 | [Transport for NSW](https://opendata.transport.nsw.gov.au/dataset/nsw-crash-data) | CC BY 3.0 AU |
 | Weather (tested, not used) | [Open-Meteo](https://open-meteo.com/) | open |
 | Daily speed tests (robustness check) | [M-Lab NDT](https://www.measurementlab.net/) | CC0 |
 

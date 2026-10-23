@@ -224,6 +224,12 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
         <button type="button" data-lead="4">4 qtr</button>
       </div>
       <p class="hint" id="leadHint">&mdash;</p>
+      <h3 style="margin-top:14px">Rank by</h3>
+      <div class="seg small" id="modeSeg" role="group" aria-label="Rank by">
+        <button type="button" data-mode="likelihood" aria-pressed="true">Likelihood</button>
+        <button type="button" data-mode="risk" aria-pressed="false">&times; road risk</button>
+      </div>
+      <p class="hint">Road risk: injury crashes on rural roads of 80&nbsp;km/h+.</p>
     </div>
     <div class="ctrl">
       <h3>What a missed decline costs</h3>
@@ -372,7 +378,7 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
 <script>
 let D=null;
 async function boot(){
-  D = await fetch('data.json').then(r=>r.json());
+  D = await fetch('data.json',{cache:'no-cache'}).then(r=>r.json());
   const M=D.meta, ST=D.static, LEADS=D.leads, H=D.history, OUT=D.outline;
   const NS="http://www.w3.org/2000/svg";
   const el=id=>document.getElementById(id);
@@ -381,10 +387,16 @@ async function boot(){
   const pct=v=>Math.round(v*100)+"%";
   el("quarter").textContent=M.quarter;
 
-  const S={lead:1,ratio:20,area:"all",q:"",onlyBudget:false,onlySteep:false,
+  const S={mode:"likelihood",lead:1,ratio:20,area:"all",q:"",onlyBudget:false,onlySteep:false,
            onlyChronic:false,sort:"rank",dir:"asc",picked:null,budget:0.2,inBudget:new Set()};
 
-  const rowsFor=lead=>LEADS[lead].regions.map(r=>Object.assign({},ST[r.id],r));
+  const rowsFor=lead=>{
+    const rows=LEADS[lead].regions.map(r=>Object.assign({},ST[r.id],r));
+    if(S.mode!=="risk")return rows;
+    const a=M.impact_alpha||0.25;
+    return rows.map(r=>Object.assign(r,{score:(r.p??0)*Math.pow(1+(r.road||0),a)}))
+      .sort((x,y)=>y.score-x.score).map((r,i)=>Object.assign(r,{rank:i+1}));
+  };
 
   /* ---- the budget is whatever is cheapest at this cost ratio, for this horizon ---- */
   function solveBudget(){
@@ -575,6 +587,12 @@ async function boot(){
     [...box.children].forEach((c,i)=>c.setAttribute("aria-pressed",i===0));
   }
   seg("leadSeg","lead",Number);
+  el("modeSeg").addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;
+    S.mode=b.dataset.mode;
+    [...el("modeSeg").children].forEach(c=>c.setAttribute("aria-pressed",c===b));
+    redraw();if(S.picked)select(S.picked);
+  });
   seg("areaSeg","area",String);
   el("ratio").addEventListener("input",e=>{S.ratio=+e.target.value;redraw();});
   el("q").addEventListener("input",e=>{S.q=e.target.value.trim();paintRows();});
@@ -635,7 +653,7 @@ boot().catch(err=>{
   /* ------------------------------------------------------------ O2 */
   let O2=null, cur=null, outcome="speed";
   async function bootO2(){
-    try{O2=await fetch("o2.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});}
+    try{O2=await fetch("o2.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});}
     catch(e){$("o2q").textContent="Could not load o2.json — "+e.message;return;}
     $("o2q").textContent=O2.question; $("o2a").textContent=O2.answer;
     const box=$("o2events");
@@ -712,7 +730,7 @@ boot().catch(err=>{
   async function bootGeneric(id){
     const host=$("tab-"+id), plan=PLANNED[id];
     let d=null;
-    try{d=await fetch(id+".json").then(r=>{if(!r.ok)throw 0;return r.json();});}catch(e){d=null;}
+    try{d=await fetch(id+".json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json();});}catch(e){d=null;}
     if(!d){
       host.innerHTML='<section class="placeholder"><span class="chip ghost">In progress</span>'+
         '<h2 style="margin-top:10px">'+esc(plan.title)+'</h2><p class="intro q" style="padding:0;margin-top:8px">'+
@@ -740,7 +758,7 @@ boot().catch(err=>{
   }
 
   /* mark unfinished objectives in the tab bar without waiting for their pages */
-  ["o3","o4","o5"].forEach(id=>fetch(id+".json",{method:"HEAD"}).then(r=>{
+  ["o3","o4","o5"].forEach(id=>fetch(id+".json",{method:"HEAD",cache:"no-cache"}).then(r=>{
     if(!r.ok)document.querySelector('.tabs a[data-tab="'+id+'"] span').insertAdjacentHTML("beforeend",' <em class="soon">· soon</em>');
   }).catch(()=>{}));
 
