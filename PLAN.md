@@ -14,7 +14,7 @@
 | | 目标 | 问的问题 | 负责人 | 状态 |
 | --- | --- | --- | --- | --- |
 | **O1** | 预测 | 哪里会持续变差？这份清单可靠吗？ | Renyu（代码由 Claude 协助） | 主体完成，可靠性分析进行中 |
-| **O2** | 变化 | 新基站、3G 关停、山火洪水怎样改变了网络？ | 待确认（建议 Ying） | 待开始 |
+| **O2** | 变化 | 新基站、3G 关停、山火洪水怎样改变了网络？ | Renyu | 完成，见 `experiments/events/` |
 | **O3** | 质量与公平 | 网络够不够用？谁被服务得最差？ | 待确认（建议 Jingwei） | 待开始 |
 | **O4** | 韧性 | 哪里只依赖一家运营商，出事时没有后路？ | 待确认（建议 Xiangbin） | 待开始 |
 | **O5** | 补盲 | 哪里根本没有地面网络？卫星能补上吗？ | 待确认（建议 Renyu） | 待开始 |
@@ -55,6 +55,8 @@
 ---
 
 ## O2 变化：哪些事件改变了网络？
+
+> **已完成**，结果见 [`experiments/events/README.md`](experiments/events/README.md)。以下是原计划。
 
 **负责：** 待确认 · **目录：** `experiments/events/`
 
@@ -184,7 +186,7 @@ brief 规定正文不超过 10 页（不含封面、执行摘要、目录、参�
 | 3 Related Work | 0.5 | Renyu |
 | 4 Data and Shared Methods | 1.0 | Renyu |
 | 5 O1 Predicting Decline | 1.25 | Renyu |
-| 6 O2 Events that Changed the Network | 1.25 | O2 负责人 |
+| 6 O2 Events that Changed the Network | 1.25 | Renyu |
 | 7 O3 Service Quality and Fairness | 1.25 | O3 负责人 |
 | 8 O4 Resilience and Redundancy | 1.25 | O4 负责人 |
 | 9 O5 Coverage Gaps and Satellite | 1.25 | O5 负责人 |
@@ -216,7 +218,8 @@ Limitation   这个结果不能说明什么
 
 ## 待决事项
 
-- [ ] O2–O5 负责人确认
+- [x] O2 负责人：Renyu
+- [ ] O3–O5 负责人确认
 - [ ] 报告标题。现标题 "Where Will the Network Fail Next?" 只覆盖 O1，且 "Fail" 过度声称。候选：
   - Mapping Mobile Connectivity Gaps in New South Wales
   - Where Is Mobile Connectivity Failing New South Wales?
