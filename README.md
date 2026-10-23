@@ -116,6 +116,9 @@ python src/anatomy.py --panel data/panel_nsw.csv
 # Does the conclusion survive a different threshold?
 python src/sensitivity.py --panel data/panel_nsw.csv
 
+# Does the unfairness follow income, or only geography?
+python src/equity.py --panel data/panel_nsw.csv
+
 # Who the pipeline keeps, who it drops, and where the inspection budget goes
 python src/coverage.py --panel data/panel.csv
 
@@ -942,6 +945,53 @@ New South Wales only, with regional areas handled by scheduled inspection
 rather than by this model. Stating the coverage is not a disclaimer; a ranking
 that silently omits a third of the state would misdirect the budget it exists
 to allocate.
+
+### The unfairness follows geography, not income
+
+Regional New South Wales is dropped before the model runs. The obvious next
+worry is that this is the same as dropping poor areas, and Lee et al. found
+crowdsourced speed-test samples skewed by income, education and age. ABS
+publishes the Index of Relative Socio-economic Disadvantage (IRSD) for every
+SA2, so the question can be asked directly. Regions are matched by the rule the
+population experiment used: the centre falls in exactly one SA2, no nearest-area
+substitution. 397 of 455 regions match.
+
+| IRSD quintile | lasting-decline rate | share of rows | share of a 15% budget |
+| --- | --- | --- | --- |
+| 1 most disadvantaged | 1.5% | 18% | 20% |
+| 2 | 1.8% | 23% | 23% |
+| 3 | 1.6% | 27% | 26% |
+| 4 | 1.1% | 15% | 20% |
+| 5 least disadvantaged | **2.7%** | 17% | 11% |
+
+Declines do not concentrate in disadvantaged areas; the least disadvantaged
+quintile has the highest rate. The budget reaches the most disadvantaged
+quintile slightly more than its share. And the regional band the model drops
+has a median IRSD decile of 5, the middle of the distribution.
+
+One pattern had to be taken apart before it could be reported. The panel seems
+to reach the most advantaged SA2s least often, 22% of them against 38% of the
+most disadvantaged, which would reverse the published bias. It is geometry.
+Inner-city SA2s are small and an 8 km tile centre lands in one at a time:
+
+| SA2 size band | advantaged reached | disadvantaged reached |
+| --- | --- | --- |
+| smallest | 0.05 | 0.04 |
+| small | 0.11 | 0.03 |
+| mid | 0.19 | 0.21 |
+| large | 0.68 | 0.73 |
+| largest | 0.94 | 0.79 |
+
+Reach rises from 5% to over 80% with size and does not follow income within any
+band. Reporting the raw 22% against 38% would have been reporting the shape of
+inner Sydney.
+
+So the system's equity problem is geographic rather than socio-economic. It
+fails people in low-usage rural areas and does not, on this evidence, fail
+people for being poor. That is a narrower claim than the one an ethics section
+would usually reach for, and it is the one the data supports. IRSD describes
+residents rather than the commuters and visitors who also run tests, and 58
+regions match no SA2, so it is evidence about the regions the model sees.
 
 ### The model fails where it matters most
 
