@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Network Decline Watch</title>
+<title>NSW Connectivity Watch</title>
 <meta name="description" content="Which parts of New South Wales are most likely to lose mobile download speed and not get it back. Built from public Ookla speed tests for ENGG2112, University of Sydney.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23fbe7c6'/%3E%3Crect x='3' y='3' width='4' height='4' fill='%238f3342'/%3E%3Crect x='9' y='9' width='4' height='4' fill='%23111'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@700&display=swap">
@@ -12,7 +12,7 @@
 html,body{margin:0;padding:0}
 img{max-width:100%}
 [hidden]{display:none!important}
-#err{margin:24px;padding:14px;border:3px solid #8f3342;background:#f9e6e6;
+.err-inline,#err{margin:24px;padding:14px;border:3px solid #8f3342;background:#f9e6e6;
   color:#111;font:700 14px/1.5 system-ui,sans-serif}
 
 /* Layout: cream board, hard-edged paper panels. Map is a pixel grid because
@@ -146,22 +146,74 @@ th.sortable[data-dir]::after{content:"\2191";margin-left:4px}
 th.sortable[data-dir=desc]::after{content:"\2193"}
 .empty{font-size:13px;color:var(--muted);margin-top:10px}
 .tile.hero{background:var(--teach-soft)}
+
+/* ---- objectives: tab bar and the O2-O5 pages ---- */
+.tabs{display:flex;flex-wrap:wrap;gap:0;border:var(--line);background:var(--paper);
+  box-shadow:var(--hard-sm);margin-bottom:22px;width:100%}
+.tabs a{flex:1 1 150px;text-decoration:none;color:var(--ink);padding:9px 12px;
+  border-right:var(--line-thin);min-width:0}
+.tabs a:last-child{border-right:0}
+.tabs a b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.06em}
+.tabs a span{display:block;font-size:12px;color:var(--muted);line-height:1.3}
+.tabs a[aria-current=page]{background:var(--ask-strong);color:var(--cream)}
+.tabs a[aria-current=page] span{color:var(--cream);opacity:.85}
+.tabs a:focus-visible{outline:3px solid var(--teach);outline-offset:-3px}
+.tabs a .soon{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.tabs a[aria-current=page] .soon{color:var(--cream)}
+.intro{padding:18px;margin-bottom:18px}
+.intro .q{font-size:17px;font-weight:700;max-width:62ch}
+.intro .a{margin-top:10px;max-width:68ch}
+.intro .m{margin-top:10px;font-size:12.5px;color:var(--muted);max-width:72ch}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.events{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;margin-bottom:18px}
+.ev{text-align:left;font:inherit;color:var(--ink);background:var(--paper);
+  border:var(--line);box-shadow:var(--hard-sm);padding:12px;cursor:pointer;
+  display:flex;flex-direction:column;gap:6px;min-width:0}
+.ev[aria-pressed=true]{background:var(--lav);box-shadow:var(--hard)}
+.ev:focus-visible{outline:3px solid var(--teach);outline-offset:2px}
+.ev h3{text-transform:none;letter-spacing:0;font-size:15px}
+.ev .when{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ev p{font-size:12.5px}
+.chip.good{background:var(--teach)}
+.two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;
+  margin-bottom:18px}
+@media(max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
+.caveat{margin-top:10px;font-size:12.5px;border-top:var(--line-thin);padding-top:8px}
+.srcs{font-size:12.5px;margin:8px 0 0;padding-left:18px}
+.srcs a{color:var(--ink)}
+.placeholder{padding:22px;border:var(--line);border-style:dashed;background:var(--paper-warm)}
+.placeholder ul{margin:10px 0 0;padding-left:18px;font-size:13px}
+.placeholder .who{font-family:var(--mono);font-size:12px;margin-top:12px}
+.fig{max-width:100%;border:var(--line-thin);background:#fff}
+.datatable{overflow-x:auto;margin-top:10px}
+
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 
 </style>
 </head>
 <body>
-<p id="err" hidden></p>
 <div class="wrap">
 <header>
   <div>
-    <h1>Network Decline Watch</h1>
-    <p class="lede">Which parts of New South Wales are most likely to lose mobile
-    download speed and not get it back. Ranked from public Ookla speed tests,
-    2019&ndash;2026.</p>
+    <h1>NSW Connectivity Watch</h1>
+    <p class="lede">How healthy is mobile connectivity across New South Wales,
+    where is it failing its users, and where should limited resources go?
+    Five questions, answered from public data.</p>
   </div>
   <div class="stamp"><span>Measured to</span><b id="quarter">&mdash;</b></div>
 </header>
+
+<nav class="tabs" aria-label="Objectives">
+  <a href="#o1" data-tab="o1"><b>O1 PREDICT</b><span>Where will it get worse?</span></a>
+  <a href="#o2" data-tab="o2"><b>O2 CHANGE</b><span>What changed it?</span></a>
+  <a href="#o3" data-tab="o3"><b>O3 QUALITY</b><span>Who is served worst?</span></a>
+  <a href="#o4" data-tab="o4"><b>O4 RESILIENCE</b><span>Is there a fallback?</span></a>
+  <a href="#o5" data-tab="o5"><b>O5 GAPS</b><span>Where is there nothing?</span></a>
+</nav>
+
+<p class="err-inline" id="err" hidden></p>
+<div class="tab" id="tab-o1">
 
 <section class="box dial">
   <div class="ctrls">
@@ -274,11 +326,60 @@ th.sortable[data-dir=desc]::after{content:"\2193"}
   </section>
 </div>
 
+</div><!-- /tab-o1 -->
+
+<div class="tab" id="tab-o2" hidden>
+  <section class="box intro">
+    <p class="q" id="o2q">&mdash;</p>
+    <p class="a" id="o2a"></p>
+    <p class="m" id="o2m"></p>
+  </section>
+  <div class="events" id="o2events" role="group" aria-label="Events"></div>
+  <div class="two">
+    <section class="box panel">
+      <div class="panel-head"><h2 id="o2title">&mdash;</h2>
+        <div class="seg small" id="o2outcome" role="group" aria-label="Outcome">
+          <button type="button" data-o="speed" aria-pressed="true">Median speed</button>
+          <button type="button" data-o="tests" aria-pressed="false">Number of tests</button>
+        </div></div>
+      <svg id="o2chart" viewBox="0 0 560 300" role="img"
+           aria-label="Difference between touched and untouched regions, quarter by quarter"></svg>
+      <p class="hint">Each square is how far touched regions moved against untouched
+        ones, that many quarters after the event; bars are 95% intervals. Quarter
+        &minus;1 is the reference. A bar crossing zero means no detectable difference.</p>
+      <p class="caveat" id="o2caveat"></p>
+    </section>
+    <section class="box panel">
+      <div class="panel-head"><h2>Which regions</h2>
+        <span class="chip ghost" id="o2count">&mdash;</span></div>
+      <svg id="o2map" viewBox="0 0 400 340" role="img"
+           aria-label="Map of the regions the selected event touched, and the comparison regions"></svg>
+      <div class="legend">
+        <span><i style="background:var(--danger)"></i>touched</span>
+        <span><i style="background:var(--paper);border-style:dashed"></i>comparison</span>
+        <span id="o2sitekey" hidden><i style="background:var(--ink);width:7px;height:7px"></i>tower site</span>
+      </div>
+    </section>
+  </div>
+  <section class="box panel truth">
+    <div class="panel-head"><h2>What this cannot tell you</h2>
+      <span class="chip bad">read first</span></div>
+    <ul id="o2limits"></ul>
+    <p class="hint" style="margin-top:10px">Sources</p>
+    <ul class="srcs" id="o2sources"></ul>
+  </section>
+</div><!-- /tab-o2 -->
+
+<div class="tab" id="tab-o3" hidden data-objective="o3"></div>
+<div class="tab" id="tab-o4" hidden data-objective="o4"></div>
+<div class="tab" id="tab-o5" hidden data-objective="o5"></div>
+
 <footer>
-  Ookla for Good open data, CC BY-NC-SA 4.0, aggregated to quadkey zoom 12 and
-  clipped to the New South Wales boundary. Built for ENGG2112, University of
-  Sydney. Figures rest on 10&ndash;17 declines per horizon across the
-  2024&ndash;2026 test years and are indicative, not precise.
+  Ookla for Good open data, CC BY-NC-SA 4.0, aggregated to ~8 km regions and
+  clipped to the New South Wales boundary; other sources are listed on each page.
+  Built for ENGG2112, University of Sydney, 2026. Every figure rests on few
+  events and is indicative, not precise.
+  <a href="https://github.com/YangRenRR/engg2112-network-decline" style="color:inherit">Code and full results</a>.
 </footer>
 </div>
 
@@ -521,5 +622,163 @@ boot().catch(err=>{
     "Could not load data.json \u2014 " + err.message;
 });
 </script>
+<script>
+/* ---- objectives: tabs, the O2 page, and O3-O5 from their own JSON ---- */
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const $=id=>document.getElementById(id);
+  const mk=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  /* what each unfinished objective will show; replaced by docs/oN.json when it exists */
+  const PLANNED={
+    o3:{title:"Service quality and fairness",
+        question:"Is the network good enough across download, upload, latency and fixed broadband, and who is served worst by official remoteness and disadvantage?",
+        will:["Regions classed as persistently slow, recently declining, or stable and fast",
+              "What a download-only view misses: upload, latency, several measures at once",
+              "Regions where fixed and mobile broadband are both poor",
+              "Who reaches the inspection list, by ABS remoteness and SEIFA"]},
+    o4:{title:"Resilience and redundancy",
+        question:"Which regions depend on a single carrier, leaving no other network to fall back on in an emergency?",
+        will:["How many carriers have a licensed site within 10 km of each region, from ACMA data",
+              "Regions served by one carrier only, and how their speeds compare",
+              "What that means for reaching Triple Zero when one network fails"]},
+    o5:{title:"Coverage gaps and satellite",
+        question:"Where is there no terrestrial mobile coverage at all, and can satellite services and the Universal Outdoor Mobile Obligation fill it?",
+        will:["Potential blind spots from the carriers' published coverage maps (ACCC)",
+              "People, roads and facilities inside them",
+              "What satellite services can actually deliver today",
+              "Remote fixed-broadband speeds before and after Starlink",
+              "Whether the UOMO is enough for NSW's blind spots"]}
+  };
+
+  const loaded={};
+  function show(id){
+    if(!["o1","o2","o3","o4","o5"].includes(id))id="o1";
+    document.querySelectorAll(".tab").forEach(t=>t.hidden=t.id!=="tab-"+id);
+    document.querySelectorAll(".tabs a").forEach(a=>{
+      if(a.dataset.tab===id)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
+    if(!loaded[id]){loaded[id]=true;
+      if(id==="o2")bootO2();
+      else if(id!=="o1")bootGeneric(id);}
+  }
+  window.addEventListener("hashchange",()=>show(location.hash.slice(1)));
+
+  /* ------------------------------------------------------------ O2 */
+  let O2=null, cur=null, outcome="speed";
+  async function bootO2(){
+    try{O2=await fetch("o2.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});}
+    catch(e){$("o2q").textContent="Could not load o2.json — "+e.message;return;}
+    $("o2q").textContent=O2.question; $("o2a").textContent=O2.answer; $("o2m").textContent=O2.method;
+    const box=$("o2events");
+    O2.events.forEach((e,i)=>{
+      const cls={clear:"good",none:"ghost",failed:"bad"}[e.verdict]||"";
+      const b=document.createElement("button");b.type="button";b.className="ev";b.dataset.i=i;
+      b.innerHTML='<span class="chip '+cls+'">'+esc(e.verdict_label)+'</span><h3>'+esc(e.name)+
+        '</h3><span class="when">'+esc(e.when)+' · '+e.touched+' touched, '+e.control+
+        ' comparison</span><p>'+esc(e.finding)+'</p>';
+      b.addEventListener("click",()=>pick(i));box.appendChild(b);});
+    $("o2outcome").addEventListener("click",ev=>{const b=ev.target.closest("button");if(!b)return;
+      outcome=b.dataset.o;[...$("o2outcome").children].forEach(c=>c.setAttribute("aria-pressed",c===b));chart();});
+    $("o2limits").innerHTML=O2.limits.map(s=>"<li>"+esc(s)+"</li>").join("");
+    $("o2sources").innerHTML=O2.sources.map(s=>'<li><a href="'+esc(s.url)+'">'+esc(s.name)+"</a></li>").join("")+
+      (O2.details?'<li><a href="'+esc(O2.details)+'">Method, code and every coefficient</a></li>':"");
+    pick(0);
+  }
+  function pick(i){
+    cur=O2.events[i];
+    [...$("o2events").children].forEach((c,j)=>c.setAttribute("aria-pressed",j===i));
+    $("o2title").textContent=cur.name; $("o2caveat").textContent=cur.caveat;
+    chart(); map();
+  }
+  function chart(){
+    const svg=$("o2chart");svg.textContent="";
+    const W=560,H=300,p={l:52,r:14,t:16,b:34};
+    const s=cur.series[outcome]||[];
+    if(!s.length){const t=mk("text",{x:W/2,y:H/2,"text-anchor":"middle",fill:"var(--muted)","font-size":"12"});
+      t.textContent="Not measured for this event";svg.appendChild(t);return;}
+    const lo=Math.min(-50,...s.map(d=>d.lo)), hi=Math.max(50,...s.map(d=>d.hi));
+    const ymin=Math.max(Math.floor(lo/25)*25,-100), ymax=Math.min(Math.ceil(hi/25)*25,200);
+    const step=(ymax-ymin)>150?50:25;
+    const ticks=[];for(let v=Math.ceil(ymin/step)*step;v<=ymax;v+=step)ticks.push(v);
+    const X=k=>p.l+(k+4)/10*(W-p.l-p.r), Y=v=>p.t+(ymax-Math.max(ymin,Math.min(ymax,v)))/(ymax-ymin)*(H-p.t-p.b);
+    ticks.forEach(v=>{
+      svg.appendChild(mk("line",{x1:p.l,x2:W-p.r,y1:Y(v),y2:Y(v),stroke:v===0?"var(--muted)":"var(--sunken)","stroke-width":v===0?1.5:1}));
+      const t=mk("text",{x:p.l-6,y:Y(v)+4,"text-anchor":"end","font-size":"10",fill:"var(--muted)","font-family":"var(--mono)"});
+      t.textContent=(v>0?"+":"")+Math.round(v)+"%";svg.appendChild(t);});
+    svg.appendChild(mk("line",{x1:X(-0.5),x2:X(-0.5),y1:p.t,y2:H-p.b,stroke:"var(--ask-strong)","stroke-dasharray":"4 3","stroke-width":1.5}));
+    const ev=mk("text",{x:X(-0.5)+5,y:p.t+10,"font-size":"10",fill:"var(--ask-strong)","font-family":"var(--mono)"});ev.textContent="event";svg.appendChild(ev);
+    s.forEach(d=>{
+      const sig=(d.lo>0||d.hi<0)&&d.k!==-1;
+      svg.appendChild(mk("line",{x1:X(d.k),x2:X(d.k),y1:Y(d.lo),y2:Y(d.hi),stroke:"var(--ink)","stroke-width":1.5,opacity:.55}));
+      const r=mk("rect",{x:X(d.k)-5,y:Y(d.b)-5,width:10,height:10,
+        fill:d.k===-1?"var(--paper)":(sig?"var(--danger)":"var(--paper)"),stroke:"var(--ink)","stroke-width":1.5});
+      const tt=mk("title",{});tt.textContent=(d.k>=0?"+":"")+d.k+" quarters: "+(d.b>0?"+":"")+d.b+"% ("+d.lo+" to "+d.hi+")";
+      r.appendChild(tt);svg.appendChild(r);});
+    for(let k=-4;k<=6;k+=2){const t=mk("text",{x:X(k),y:H-p.b+16,"text-anchor":"middle","font-size":"10",fill:"var(--muted)","font-family":"var(--mono)"});
+      t.textContent=(k>0?"+":"")+k;svg.appendChild(t);}
+    const xl=mk("text",{x:(p.l+W-p.r)/2,y:H-4,"text-anchor":"middle","font-size":"10",fill:"var(--muted)"});
+    xl.textContent="quarters from the event · filled square = significant";svg.appendChild(xl);
+  }
+  function map(){
+    const svg=$("o2map");svg.textContent="";
+    const W=400,H=340,pad=14,O=O2.outline;
+    const lons=O.map(q=>q[0]),lats=O.map(q=>q[1]);
+    const L=[Math.min(...lons),Math.min(...lats)],Hh=[Math.max(...lons),Math.max(...lats)];
+    const sc=Math.min((W-2*pad)/(Hh[0]-L[0]),(H-2*pad)/(Hh[1]-L[1]));
+    const ox=(W-(Hh[0]-L[0])*sc)/2,oy=(H-(Hh[1]-L[1])*sc)/2;
+    const X=lon=>ox+(lon-L[0])*sc, Y=lat=>H-oy-(lat-L[1])*sc;
+    svg.appendChild(mk("polygon",{points:O.map(q=>X(q[0]).toFixed(1)+","+Y(q[1]).toFixed(1)).join(" "),
+      fill:"var(--sunken)",stroke:"var(--ink)","stroke-width":2}));
+    cur.control_pts.forEach(q=>svg.appendChild(mk("rect",{x:X(q[0])-2.5,y:Y(q[1])-2.5,width:5,height:5,
+      fill:"var(--paper)",stroke:"var(--ink)","stroke-width":.6,"stroke-dasharray":"1.5 1",opacity:.7})));
+    cur.touched_pts.forEach(q=>svg.appendChild(mk("rect",{x:X(q[0])-3.5,y:Y(q[1])-3.5,width:7,height:7,
+      fill:"var(--danger)",stroke:"var(--ink)","stroke-width":1})));
+    $("o2sitekey").hidden=!cur.sites;
+    (cur.sites||[]).forEach(q=>{const r=mk("rect",{x:X(q[0])-1.5,y:Y(q[1])-1.5,width:3,height:3,fill:"var(--ink)"});
+      const t=mk("title",{});t.textContent=q[2]+", completed "+q[3];r.appendChild(t);svg.appendChild(r);});
+    $("o2count").textContent=cur.touched+" touched · "+cur.control+" comparison";
+  }
+
+  /* ------------------------------------------------------- O3 to O5 */
+  async function bootGeneric(id){
+    const host=$("tab-"+id), plan=PLANNED[id];
+    let d=null;
+    try{d=await fetch(id+".json").then(r=>{if(!r.ok)throw 0;return r.json();});}catch(e){d=null;}
+    if(!d){
+      host.innerHTML='<section class="placeholder"><span class="chip ghost">In progress</span>'+
+        '<h2 style="margin-top:10px">'+esc(plan.title)+'</h2><p class="intro q" style="padding:0;margin-top:8px">'+
+        esc(plan.question)+'</p><p class="hint">This page will show:</p><ul>'+
+        plan.will.map(w=>"<li>"+esc(w)+"</li>").join("")+
+        '</ul><p class="who">Results appear here once '+id+'.json is published.</p></section>';
+      return;
+    }
+    let h='<section class="box intro"><span class="chip '+(d.status==="done"?"good":"ghost")+'">'+
+      esc(d.status==="done"?"Done":"In progress")+'</span>'+
+      '<h2 style="margin-top:10px">'+esc(d.title)+'</h2><p class="q" style="margin-top:8px">'+esc(d.question)+'</p>'+
+      (d.answer?'<p class="a">'+esc(d.answer)+'</p>':"")+(d.method?'<p class="m">'+esc(d.method)+'</p>':"")+
+      (d.owner?'<div class="meta-row"><span class="chip">'+esc(d.owner)+'</span></div>':"")+'</section>';
+    (d.figures||[]).forEach(f=>{h+='<section class="box panel" style="margin-bottom:18px"><img class="fig" src="'+
+      esc(f.src)+'" alt="'+esc(f.alt||f.caption||"")+'">'+(f.caption?'<p class="hint">'+esc(f.caption)+'</p>':"")+'</section>';});
+    (d.tables||[]).forEach(t=>{h+='<section class="box panel" style="margin-bottom:18px">'+(t.title?'<h2>'+esc(t.title)+'</h2>':"")+
+      '<div class="datatable"><table><thead><tr>'+t.columns.map(c=>"<th>"+esc(c)+"</th>").join("")+
+      '</tr></thead><tbody>'+t.rows.map(r=>"<tr>"+r.map(c=>"<td>"+esc(c)+"</td>").join("")+"</tr>").join("")+
+      '</tbody></table></div></section>';});
+    if(d.limits||d.sources)h+='<section class="box panel truth"><div class="panel-head"><h2>What this cannot tell you</h2>'+
+      '<span class="chip bad">read first</span></div><ul>'+(d.limits||[]).map(s=>"<li>"+esc(s)+"</li>").join("")+'</ul>'+
+      (d.sources?'<p class="hint" style="margin-top:10px">Sources</p><ul class="srcs">'+
+      d.sources.map(s=>'<li><a href="'+esc(s.url)+'">'+esc(s.name)+"</a></li>").join("")+"</ul>":"")+'</section>';
+    host.innerHTML=h;
+  }
+
+  /* mark unfinished objectives in the tab bar without waiting for their pages */
+  ["o3","o4","o5"].forEach(id=>fetch(id+".json",{method:"HEAD"}).then(r=>{
+    if(!r.ok)document.querySelector('.tabs a[data-tab="'+id+'"] span').insertAdjacentHTML("beforeend",' <em class="soon">· soon</em>');
+  }).catch(()=>{}));
+
+  show(location.hash.slice(1)||"o1");
+})();
+</script>
+
 </body>
 </html>
