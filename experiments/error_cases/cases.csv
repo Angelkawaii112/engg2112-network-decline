@@ -1,0 +1,30 @@
+kind,region,quarter,place,lat,lon,area,mbps_now,change_next_q,change_two_q,tests,rank,of
+caught,311213012233,2024 Q2,near Kingscliff - Fingal Head,-28.2657,153.5889,urban,137.0,-0.296,-0.356,136,1,111
+caught,311213030233,2024 Q2,near Ballina,-28.8832,153.5889,urban,222.3,-0.228,-0.201,141,6,111
+caught,311230011032,2024 Q4,Dubbo - West,-32.2128,148.5791,urban,196.9,-0.217,-0.221,73,12,105
+caught,311230113032,2025 Q2,Cessnock,-32.8057,151.3916,outer,130.7,-0.277,-0.21,176,13,94
+caught,311230130332,2025 Q3,Dural - Kenthurst - Wisemans Ferry,-33.6878,151.04,urban,298.2,-0.386,-0.266,294,2,93
+caught,311230131030,2024 Q4,Tuggerah - Kangy Angy,-33.3213,151.3916,urban,280.7,-0.238,-0.31,233,3,105
+caught,311230131102,2024 Q4,near Budgewoi - Buff Point - Halekulani,-33.2479,151.5674,urban,219.6,-0.267,-0.427,237,2,105
+caught,311230131203,2024 Q4,Umina - Booker Bay - Patonga,-33.5414,151.3037,urban,166.4,-0.299,-0.318,213,4,105
+caught,311230131211,2024 Q2,near Avoca Beach - Copacabana,-33.4681,151.4795,outer,251.7,-0.248,-0.295,247,16,111
+caught,311230131223,2025 Q1,Mona Vale - Warriewood (North),-33.6878,151.3037,urban,223.5,-0.238,-0.312,337,13,96
+caught,311230132001,2024 Q4,Blue Mountains - South,-33.7609,150.6006,urban,364.2,-0.461,-0.332,185,1,105
+caught,311230132013,2025 Q3,Horsley Park - Kemps Creek,-33.8339,150.7764,urban,217.4,-0.256,-0.276,326,11,93
+caught,311230132102,2024 Q3,Horsley Park - Kemps Creek,-33.8339,150.8643,urban,261.5,-0.252,-0.248,368,9,111
+caught,311230203122,2025 Q3,Wagga Wagga - South,-35.1379,147.3486,urban,237.7,-0.285,-0.315,275,12,93
+caught,311230310223,2025 Q2,North Nowra - Bomaderry,-34.8499,150.6006,urban,240.5,-0.268,-0.323,143,2,94
+caught,311231002031,2025 Q1,Nelson Bay Peninsula,-32.7318,152.1826,urban,444.8,-0.756,-0.758,398,1,96
+missed,311230310033,2024 Q2,Albion Park Rail,-34.5609,150.7764,urban,110.2,-0.247,-0.226,185,20,111
+false alarm,311213203121,2025 Q2,Sawtell - Boambee,-30.335,153.0615,urban,299.4,-0.519,-0.031,605,1,94
+false alarm,311213012233,2025 Q3,near Kingscliff - Fingal Head,-28.2657,153.5889,urban,170.2,0.003,-0.155,76,1,93
+false alarm,311230121300,2024 Q1,Lithgow,-33.4681,150.1611,urban,141.1,-0.23,-0.116,69,1,111
+false alarm,311231002030,2024 Q2,Nelson Bay Peninsula,-32.7318,152.0947,urban,261.3,-0.253,-0.135,109,2,111
+false alarm,311230131221,2024 Q2,near Avalon - Palm Beach,-33.6146,151.3037,urban,238.9,0.06,-0.011,62,3,111
+false alarm,311230113323,2025 Q1,near Swansea - Caves Beach,-33.1007,151.6553,outer,268.1,-0.073,-0.049,103,2,96
+false alarm,311230131221,2024 Q3,near Avalon - Palm Beach,-33.6146,151.3037,urban,232.7,-0.067,-0.19,78,1,111
+false alarm,311230310101,2024 Q1,near Woonona - Bulli - Russell Vale,-34.3434,150.9521,urban,108.1,-0.062,-0.038,73,2,111
+false alarm,311230131102,2024 Q3,near Budgewoi - Buff Point - Halekulani,-33.2479,151.5674,urban,187.4,0.359,-0.004,86,2,111
+false alarm,311230132210,2025 Q3,Camden - Ellis Lane,-34.0527,150.6885,urban,248.7,0.009,-0.182,89,3,93
+false alarm,311230132123,2024 Q2,Holsworthy - Wattle Grove,-33.9798,150.9521,urban,233.4,-0.164,-0.087,224,4,111
+false alarm,311230113323,2024 Q2,near Swansea - Caves Beach,-33.1007,151.6553,outer,227.0,-0.242,0.051,96,5,111
