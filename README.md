@@ -36,7 +36,8 @@ where is it failing its users, and where should limited resources go?
 
 The five run in sequence: whether it will get worse, what changes it, whether
 it is good enough now, whether it holds up when something goes wrong, and what
-happens where there is nothing to measure.
+happens where there is nothing to measure. Data, methods, owners and the limits
+each objective must respect are set out in [PLAN.md](PLAN.md).
 
 ## O1 in one paragraph
 
@@ -1151,18 +1152,20 @@ our plan from tile-level to region-level modelling.
 
 ## Status
 
-- [x] Confirm data availability and licence
-- [x] Measure the base rate of decline at several thresholds
-- [x] Build the region-quarter panel for 2019 Q1 to 2026 Q1
-- [x] Replace the coarse grid with a spatial join on ABS SA2 boundaries
-- [x] Add quarterly weather features (Open-Meteo, in place of BoM)
-- [x] Baselines and a first random forest, validated by time
-- [x] Report recall separately for urban, outer suburban and regional areas
-- [x] Evaluate against an inspection budget rather than a fixed threshold
-- [x] Test the model against a mean-reversion baseline
-- [x] Daily-resolution check of the weather question using M-Lab
-- [ ] Variable region size so sparse areas have enough data to model
-- [x] Produce the maintenance priority ranking
+**O1 Predict**
+- [x] Region-quarter panel, 2019 Q1 to 2026 Q1, clipped to New South Wales
+- [x] Shrinkage and lasting-decline label; purged rolling-origin evaluation
+- [x] Rule against forest and five other methods; cost-based budget
+- [x] Recovery prediction, symmetry test, horizon, clustering, equity checks
+- [x] End-to-end pipeline and published site
+- [ ] Wider coverage: relaxed history requirement, larger regions where sparse
+- [ ] Reliability: error cases, ranking stability, leave-one-quarter-out
+- [ ] Cross-state generalisation to the Victorian and Queensland regions
+
+**O2 Change** - [ ] towers, 3G switch-off, bushfires and floods
+**O3 Quality and fairness** - [ ] multi-metric quality, fixed broadband, official remoteness
+**O4 Resilience** - [ ] carrier redundancy from ACMA licence data
+**O5 Gaps** - [ ] coverage gaps, satellite capability, UOMO assessment
 
 ## Notes
 

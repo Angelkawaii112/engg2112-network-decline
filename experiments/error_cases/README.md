@@ -1,5 +1,7 @@
 # Error cases: what actually happened in these places?
 
+Part of **O1** (how far the ranking can be trusted); see [PLAN.md](../../PLAN.md).
+
 `cases.csv` lists every lasting decline in the 2024–2026 test years, sorted into
 what the deployed ranker did with it at a 15% budget, plus the twelve strongest
 false alarms:
