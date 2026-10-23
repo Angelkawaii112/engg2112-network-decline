@@ -1,7 +1,7 @@
 """
-Re-derive the figures the README publishes, and fail if any of them has moved.
+Re-derive the figures RESULTS.md publishes, and fail if any of them has moved.
 
-A README full of measured numbers rots the moment a default changes, and this
+A results file full of measured numbers rots the moment a default changes, and this
 one has forty of them. Checking by hand found exactly that: walkforward.py
 defaulted to a start year the documented command did not use, so running it
 bare produced a different figure from the one published. Nothing was wrong with
