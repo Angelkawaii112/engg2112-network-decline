@@ -16,7 +16,29 @@ A network operator, regulator or council outside the carrier cannot see the
 carrier's own telemetry, so this project asks what public, crowdsourced speed
 tests can support instead.
 
-## What this is, in one paragraph
+## Objectives
+
+The project began as one question - where will mobile performance decline next -
+and has widened into five, because a forecast of decline says nothing about the
+places that are already poorly served, the events that change the network, or
+the places with no terrestrial network at all.
+
+**Overall question.** How healthy is mobile connectivity across New South Wales,
+where is it failing its users, and where should limited resources go?
+
+| | Objective | Question | Status |
+| --- | --- | --- | --- |
+| **O1** | Predict | Which regions face a lasting decline in performance, and how far can that ranking be trusted? | done; reliability analysis in progress |
+| **O2** | Change | How did new towers, the 3G switch-off, and bushfires and floods change measured performance? | in progress |
+| **O3** | Quality and fairness | Is the network good enough across download, upload, latency and fixed broadband, and who is served worst by official remoteness and disadvantage? | in progress |
+| **O4** | Resilience | Which regions depend on a single carrier, leaving no other network to fall back on in an emergency? | in progress |
+| **O5** | Gaps | Where is there no terrestrial mobile coverage at all, and can satellite services and the Universal Outdoor Mobile Obligation fill it? | in progress |
+
+The five run in sequence: whether it will get worse, what changes it, whether
+it is good enough now, whether it holds up when something goes wrong, and what
+happens where there is nothing to measure.
+
+## O1 in one paragraph
 
 A ranking of New South Wales regions by the risk of a **lasting decline** in
 median mobile download speed: a fall of at least 20% that is still present a
@@ -25,7 +47,7 @@ faults. Crowdsourced tests can show that a region's measured performance has
 dropped and stayed down; only someone on site can say why. The ranking covers
 **urban and outer-suburban New South Wales only**. Regional areas lack the test
 history the method needs, 94% of their region-quarters are dropped before
-modelling, and they need scheduled inspection or other data rather than this.
+modelling, and O3 to O5 are where they are studied instead.
 
 ## What it does
 
