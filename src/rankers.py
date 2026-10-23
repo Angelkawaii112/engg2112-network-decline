@@ -37,7 +37,7 @@ from sklearn.metrics import average_precision_score
 from compare import recall_at_budget
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from shrink import add_persistent, shrink_speed, shrinkage_constant
+from shrink import add_persistent, purge, shrink_speed, shrinkage_constant
 
 FEATURE = "speed_vs_own_mean"      # how far a region sits above its own history
 
@@ -103,6 +103,7 @@ def main(panel_path, split_year, trees):
     feats = FEATURES + LAG_FEATURES
     df = df.dropna(subset=feats + ["fwd_1", "fwd_2"])
     train, test = df[df.year < split_year], df[df.year >= split_year]
+    train = purge(train, test.t.min())
     y = test.persistent.astype(int)
 
     simple = MeanReversion().fit(train)

@@ -27,7 +27,7 @@ from compare import recall_at_budget
 from coverage import AREAS, attrition
 from model import (FEATURES, LAG_FEATURES, add_area_type, add_history,
                    add_lags, add_target)
-from shrink import add_persistent, shrink_speed, shrinkage_constant
+from shrink import add_persistent, purge, shrink_speed, shrinkage_constant
 
 INK, MID, PALE = "#111111", "#777777", "#c8c8c8"
 
@@ -52,6 +52,7 @@ def prepare(panel_path, split_year):
 def fit(full, feats, split_year, trees, seed):
     d = full.dropna(subset=feats + ["fwd_1", "fwd_2"])
     train, test = d[d.year < split_year], d[d.year >= split_year].copy()
+    train = purge(train, test.t.min())
     m = RandomForestClassifier(n_estimators=trees, class_weight="balanced",
                                min_samples_leaf=5, random_state=seed, n_jobs=-1)
     m.fit(train[feats], train.persistent.astype(int))
