@@ -1,0 +1,6 @@
+.cache/
+data/raw/
+__pycache__/
+.pytest_cache/
+*.partial
+private/

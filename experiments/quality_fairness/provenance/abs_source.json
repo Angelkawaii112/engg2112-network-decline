@@ -1,0 +1,13 @@
+{
+  "url": "https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/digital-boundary-files/ASGS_Ed3_2021_RA_GPKG_GDA2020.zip",
+  "source_page": "https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/digital-boundary-files",
+  "metadata": {
+    "ETag": null,
+    "Last-Modified": "Fri, 10 Mar 2023 01:38:55 GMT",
+    "Content-Length": null
+  },
+  "downloaded_utc": "2026-10-25T15:42:43.288197+00:00",
+  "sha256": "e3802bb9bf1f12a67a97b22152f55fc6e2cc86f2f1deed61d5b48d96ce9ba578",
+  "bytes": 30018587,
+  "classification": "ASGS 2021 Remoteness Areas, GDA2020"
+}

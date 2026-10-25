@@ -1,0 +1,20 @@
+{
+  "planned_quarters": 29,
+  "rows_before_geography": 68591,
+  "unique_grids_before_geography": 7611,
+  "panel_sha256": "785c2796d5c4d359e97ec52e1b1653c696807d29cd4a43ca9928f8b72bc1343d",
+  "protocol_sha256": "668342508906d5dd7390853ad7ec99009f3025e2cfb399ff8b2ea1a9a372229b",
+  "python": "3.12.14",
+  "packages": {
+    "duckdb": "1.5.5",
+    "pandas": "2.3.1",
+    "numpy": "2.3.2",
+    "geopandas": "1.2.0",
+    "shapely": "2.2.0",
+    "pyogrio": "0.13.0",
+    "pyproj": "3.8.0",
+    "matplotlib": "3.10.6"
+  },
+  "source_scope": "Independent remote queries; no teammate panel imported",
+  "metric": "test-count-weighted arithmetic means; device sums not unique persons"
+}
