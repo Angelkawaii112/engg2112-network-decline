@@ -1,0 +1,22 @@
+{
+  "verified": true,
+  "method": "Independent scalar reconstruction from the acquired NSW panel; no assess() call",
+  "reconstructed_counts": {
+    "eligible": 3145,
+    "download": 178,
+    "upload": 242,
+    "latency": 137,
+    "any_metric": 437,
+    "extra_only": 259
+  },
+  "all_saved_statuses_checked": 37449,
+  "quarter_aggregate_hashes_checked": 29,
+  "geography_join": "unique NSW codes only",
+  "result_hashes_checked": 9,
+  "source_file_sha256": {
+    "scripts/acquire.py": "972d6b95ee44ce50caae8499cefb064504e4d442b9dec26c6402d1c39dcffddc",
+    "scripts/analyse.py": "91d04042a6cb5510ee8b148daf94073f206949f20a66fcb444f49eb82b59aec4",
+    "scripts/test_analysis.py": "c8584b1d91c524e0a69b01c9bc2e5cdb1c034c36e733847a2dbaf4ace309ba94",
+    "scripts/verify.py": "a90cc5394f3611f9e1387bc8f359c2f79f5ecc293b1dc1868509136f95de2104"
+  }
+}

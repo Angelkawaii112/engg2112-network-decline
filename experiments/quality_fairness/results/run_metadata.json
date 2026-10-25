@@ -1,0 +1,21 @@
+{
+  "panel_sha256": "e0cca5a898ea494faa1a783bd3f4701be718d418ebc9cc471a5ed24585fa517b",
+  "abs_sha256": "e3802bb9bf1f12a67a97b22152f55fc6e2cc86f2f1deed61d5b48d96ce9ba578",
+  "protocol_sha256": "668342508906d5dd7390853ad7ec99009f3025e2cfb399ff8b2ea1a9a372229b",
+  "bootstrap_draws": 1000,
+  "bootstrap_seed": 2112,
+  "common_all_five_quarters": [],
+  "geography": "Unique centroid in NSW RA 10–14",
+  "mixed_ra_selected_grids": 846,
+  "results_sha256": {
+    "equal_quarter_all_classes.csv": "7c2c4067253a51daa598b5f8fa4c59754516be6d2effe6d83f239e51c4417309",
+    "equal_quarter_pairwise.csv": "d7d4ffb51d12b75c986b1e2839896ec5c31043dbfe08755f4cbe16ec39d94d19",
+    "first_example_each_pattern.csv": "697a76c361d87b222cf52691252f4100fa7095f5f30dd6539f0cd0b37d025620",
+    "geography_audit.csv": "7bc762ce813798dfaf23ab1a7c9f5fca9d6995d4566a5653b88544b5354172b7",
+    "pattern_counts.csv": "a5c03a31ab785c91dc56d50f0c1838f236a426c4b79e01eb8d7d38152fde3327",
+    "quarter_rates.csv": "06265a441f796e9dd0132a1b150b6beed67ffc5b17ad83a0f999eb1f1e648849",
+    "record_assessments.csv": "18f205343ed5fe9ef795fc7facb46544ef96ed8ce7be6f0d7f5f6a8fbf8bedc2",
+    "sensitivity.csv": "1420c538737afb04b5e0ea2ba7f53180f0db226b011dd3e289b3c1d97f26abf9",
+    "summary.csv": "67583e07f7f322affebeb1680a7c3cb8aaf67118a0fc705f8bedb4304cb1122d"
+  }
+}

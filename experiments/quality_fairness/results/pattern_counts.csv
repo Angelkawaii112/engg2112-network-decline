@@ -1,0 +1,9 @@
+pattern,records
+No flagged deterioration,2708
+Download only,94
+Upload only,141
+Download + upload,65
+Latency only,95
+Download + latency,6
+Upload + latency,23
+All three,13
