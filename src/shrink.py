@@ -1,8 +1,8 @@
 """
 The fix that made the model worth using: measure before predicting.
 
-A region's speed for a quarter is the median of however many tests people
-happened to run there. With 59 tests one quarter and 200 the next, the median
+A region's speed for a quarter is the test-weighted average of however many tests people
+happened to run there. With 59 tests one quarter and 200 the next, the average
 moves on its own, and a "20% decline" built from those two numbers is often
 nothing but that movement. The earlier model scored 0.385 against a
 mean-reversion baseline's 0.347, which is what chasing sampling noise looks
@@ -11,7 +11,7 @@ predicts.
 
 Two changes follow from that diagnosis.
 
-  shrink_speed   pull each quarter's median toward the region's own history,
+  shrink_speed   pull each quarter's average toward the region's own history,
                  weighted by how many tests stand behind it. A region with
                  many tests keeps its number; a thinly measured one is mostly
                  told what it has usually been.
@@ -55,7 +55,7 @@ DROP = -0.20
 
 
 def shrinkage_constant(df, split_year):
-    """How many tests make this quarter's median as trustworthy as the past."""
+    """How many tests make this quarter's average as trustworthy as the past."""
     return float(df[df.year < split_year].tests.median())
 
 

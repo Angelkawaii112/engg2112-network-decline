@@ -2,7 +2,7 @@
 What the declines actually are, which nobody had asked.
 
 The project spent its effort on predicting these events and none on checking
-whether they are worth predicting. A fall in a crowdsourced download median
+whether they are worth predicting. A fall in a crowdsourced download average
 could be a degraded cell, or it could be the same cell measured by different
 people on different plans with different handsets. Those call for completely
 different responses, and only one of them justifies sending a crew.
@@ -14,7 +14,7 @@ download without moving the rest.
 
 The answer is clear and it is the good one. Upload falls alongside download in
 86% of these events against 31% of everything else, and the download and upload
-medians fall by almost the same proportion, 38% and 35%. Whatever these are,
+averages fall by almost the same proportion, 38% and 35%. Whatever these are,
 they are not an artefact of which handsets showed up.
 
 Congestion is not the mechanism, which is worth stating because it is the

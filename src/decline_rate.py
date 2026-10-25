@@ -1,5 +1,5 @@
 """
-How often does a region's median download speed fall by more than X%
+How often does a region's average download speed fall by more than X%
 from one quarter to the next?
 
 This is the check that tells us whether the 20% threshold in the proposal

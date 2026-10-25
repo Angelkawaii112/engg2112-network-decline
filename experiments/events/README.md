@@ -20,7 +20,7 @@ the bushfire comparison fails its own validity check.
 | Floods | [NSW Reconstruction Authority](https://www.nsw.gov.au/departments-and-agencies/nsw-reconstruction-authority/northern-region/northern-rivers/about): the seven Northern Rivers LGAs; boundaries from ABS ASGS 2021 | region centre inside Ballina, Byron, Clarence Valley, Kyogle, Lismore, Richmond Valley or Tweed | 2022 Q1 |
 | 3G switch-off | [Department of Infrastructure](https://www.infrastructure.gov.au/department/media/news/3g-network-switch-offs), [ACMA](https://www.acma.gov.au/3g-network-switch), [Optus notice](https://www.optus.com.au/content/dam/optus/documents/for-you/support/mobiles-tablets-wearables/important-changes-3g/switching-off-our-3G-network-simplified-english.pdf) | every region; non-city regions compared with city regions | TPG 2024 Q1; Telstra and Optus 2024 Q4 |
 
-Speeds are Ookla's measured quarterly medians for all 455 NSW regions
+Speeds are Ookla's measured quarterly averages (test-weighted) for all 455 NSW regions
 (`data/panel_nsw.csv`), including the regional areas the O1 model cannot use.
 Sources disagree on the Telstra/Optus date (28 October against November 2024);
 both fall in 2024 Q4, so the disagreement does not affect a quarterly analysis.
@@ -37,7 +37,7 @@ log(y)_it = region_i + quarter_t + sum_k beta_k [t - event_i = k] + e_it
 quarters after the event, against the quarter before it. The region effect
 removes each region's own level; the quarter effect removes everything that
 moved the whole state at once - 5G rollout, seasons, Ookla's own changes.
-Standard errors are clustered by region. Outcomes are median download speed
+Standard errors are clustered by region. Outcomes are average download speed
 and number of tests, both logged.
 
 Two choices decide the answer and are stated:
@@ -71,7 +71,7 @@ Full coefficients: `results/coefficients.csv`; summary: `results/summary.csv`.
 
 **Floods.** In the quarter the Northern Rivers flooded, the number of speed tests
 in the seven LGAs rose by a third relative to other northern regions, and two
-quarters later median speed was 23% lower. Both had returned to the comparison
+quarters later average speed was 23% lower. Both had returned to the comparison
 regions' path within about a year. More testing during the flood is people
 checking a connection they were worried about; the later fall in speed is
 consistent with damaged infrastructure carrying load while it was repaired.
@@ -81,7 +81,7 @@ Lismore, the worst-hit LGA, has only six regions and shows nothing on its own.
 22% and 39% a year after Telstra and Optus switched 3G off, with no gap
 beforehand. This rests on an assumption the data cannot check: that 3G-only
 devices were more common outside the cities. If it holds, the slowest devices
-leaving the sample would lift non-city medians, so part of the "improvement" is
+leaving the sample would lift non-city averages, so part of the "improvement" is
 a change in who is measured rather than in the network. Regional 4G and 5G
 upgrades in 2025 would produce the same pattern, and this design cannot
 separate them. TPG's January 2024 switch-off is not identified separately: its
@@ -90,9 +90,9 @@ later quarters overlap the Telstra/Optus window.
 **New towers.** Nothing measurable within 5, 10 or 20 km. That does not mean
 the towers do not work. They are built in black spots, where there was no
 coverage to measure; their users are new rather than faster, an ~8 km region's
-median is set by the town tower that already served it, and Ookla only records
+average is set by the town tower that already served it, and Ookla only records
 a black spot once someone runs a test inside it. The towers' benefit is
-coverage, which speed medians are not built to see - O5 measures coverage
+coverage, which speed averages are not built to see - O5 measures coverage
 directly.
 
 **Bushfires.** The comparison fails. Burnt regions were already moving away from
@@ -100,7 +100,7 @@ the controls in 2019 Q1, before the fire season, and the definition of "burnt"
 changes the sign of the result: regions with any burn show −12% in the short
 run, regions at least a third burnt show +26%. Nothing here measures what the
 fires did. The burnt areas are mostly forested ranges with few tests, and the
-outages they caused lasted days, which a quarterly median cannot see.
+outages they caused lasted days, which a quarterly average cannot see.
 
 ## Limits
 
@@ -110,7 +110,7 @@ outages they caused lasted days, which a quarterly median cannot see.
 - **The 3G result depends on an untested assumption** about where 3G-only devices
   were.
 - **Crowdsourced composition.** Who runs tests changes with events, as the flood
-  and 3G test counts show. A change in median speed is partly a change in who
+  and 3G test counts show. A change in average speed is partly a change in who
   is measuring.
 
 ## Reproduce

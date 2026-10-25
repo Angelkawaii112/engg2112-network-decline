@@ -29,7 +29,7 @@ def main():
     pct = lambda b: 100 * (np.exp(b) - 1)
     fig, axes = plt.subplots(2, 2, figsize=(7.0, 4.6), sharex=True)
     for ax, (event, title) in zip(axes.flat, PANELS):
-        for outcome, color, style, label, off in (("log_speed", INK, "-", "median speed", -0.08),
+        for outcome, color, style, label, off in (("log_speed", INK, "-", "average speed", -0.08),
                                                   ("log_tests", MID, (0, (4, 2)), "number of tests", 0.08)):
             g = c[(c.event == event) & (c.outcome == outcome)].sort_values("k")
             if g.empty:

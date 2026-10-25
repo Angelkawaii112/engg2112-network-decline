@@ -36,7 +36,7 @@ EVENTS = [
     {"id": "towers", "key": "towers, 10 km", "name": "New Mobile Black Spot towers",
      "when": "2020 Q1 - 2025 Q2", "verdict": "none", "verdict_label": "No measurable trace",
      "finding": "No measurable change within 5-20 km.",
-     "caveat": "Towers add coverage, which speed medians cannot see. See O5."},
+     "caveat": "Towers add coverage, which speed averages cannot see. See O5."},
     {"id": "fires", "key": "fires 2019-20", "name": "2019-20 bushfires",
      "when": "2019 Q4", "verdict": "failed", "verdict_label": "Comparison failed",
      "finding": "Burnt regions were already diverging before the fires.",

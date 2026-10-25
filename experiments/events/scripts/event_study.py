@@ -218,10 +218,10 @@ def three_g(panel):
         for name, sub in (("city", g[g.urban]), ("rest of NSW", g[~g.urban])):
             w = sub.tests
             rows.append({"t": t, "quarter": qlabel(t), "area": name,
-                         "median_mbps": float(np.exp(np.average(sub.log_speed, weights=w))),
+                         "avg_mbps": float(np.exp(np.average(sub.log_speed, weights=w))),
                          "tests": int(w.sum()), "regions": len(sub)})
     s = pd.DataFrame(rows)
-    s["yoy_speed_%"] = s.groupby("area").median_mbps.pct_change(4) * 100
+    s["yoy_speed_%"] = s.groupby("area").avg_mbps.pct_change(4) * 100
     s["yoy_tests_%"] = s.groupby("area").tests.pct_change(4) * 100
     return s
 
@@ -286,7 +286,7 @@ def main():
     print("\n3G: statewide series around the switch-offs (2024 Q1 TPG, 2024 Q4 Telstra/Optus)")
     show = g3[g3.t.between(qindex(2023, 1), qindex(2025, 4))]
     print(show.pivot(index="quarter", columns="area",
-                     values=["median_mbps", "tests", "yoy_speed_%", "yoy_tests_%"])
+                     values=["avg_mbps", "tests", "yoy_speed_%", "yoy_tests_%"])
           .round(1).to_string())
 
 

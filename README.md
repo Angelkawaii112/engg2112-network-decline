@@ -22,7 +22,7 @@ cannot. This project asks what public, crowdsourced speed tests can tell them.
 | --- | --- | --- | --- |
 | **O1** | Predict | Which regions face a lasting decline, and how far can that ranking be trusted? | done |
 | **O2** | Change | How did new towers, the 3G switch-off, and bushfires and floods change performance? | [done](experiments/events/README.md) |
-| **O3** | Quality and fairness | Is the network good enough, and who is served worst? | in progress |
+| **O3** | Quality and fairness | Is the network good enough, and who is served worst? | [partly done](experiments/quality_fairness/README.md) |
 | **O4** | Resilience | Which regions depend on a single carrier, with no fallback in an emergency? | in progress |
 | **O5** | Gaps | Where is there no terrestrial coverage, and can satellite fill it? | in progress |
 
@@ -31,7 +31,7 @@ Full results with every table: **[RESULTS.md](RESULTS.md)**.
 
 ## O1 in brief
 
-The system ranks NSW regions by the risk of a **lasting decline**: median
+The system ranks NSW regions by the risk of a **lasting decline**: average
 mobile download speed falling at least 20% and still down a quarter later. The
 output is a list of places to **investigate**, not a list of faults.
 
@@ -58,7 +58,7 @@ Ookla quarterly tiles, clipped to NSW
 
 - **Few events.** 43 lasting declines across 13 quarters; figures are indicative, not precise.
 - **Test years reused.** Many methods were compared on the same quarters, so this is an evaluation on available data, not an independent validation.
-- **Measured, not confirmed.** A lasting decline is a drop in a crowdsourced median; only an on-site check confirms a fault.
+- **Measured, not confirmed.** A lasting decline is a drop in a crowdsourced average; only an on-site check confirms a fault.
 
 ## Data
 

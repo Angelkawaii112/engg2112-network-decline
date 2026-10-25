@@ -29,12 +29,12 @@ an independent final validation; a quarter Ookla has not yet published is the
 only test this project could not have tuned against.
 
 **The labels are measured performance, not confirmed faults.** A lasting decline
-is a lasting drop in a crowdsourced median. Upload falling with download in 86%
+is a lasting drop in a crowdsourced average. Upload falling with download in 86%
 of cases argues that most are real changes in the link, but a quarter of them
 coincide with the number of tests halving, and nothing here can separate a
 degraded cell from a thinner sample of it. Only an on-site inspection turns a
 flagged region into a fault, and only those inspection outcomes could train a
-model on faults rather than on medians.
+model on faults rather than on averages.
 
 ## How the proposal became this
 
@@ -57,14 +57,14 @@ the evidence sits.
 ### Measuring before predicting is what made the model useful
 
 Every result above was held back by the same thing. A region's quarterly speed
-is the median of however many tests people happened to run there: 59 one
+is the average of however many tests people happened to run there: 59 one
 quarter, 206 the next. A 20% decline built from two such numbers is often only
 that movement, and mean reversion predicts a bounce better than anything else
 can, which is why the forest could only reach 0.372 against its 0.368.
 
 Two changes follow from that diagnosis, both in `src/shrink.py`:
 
-1. **Shrink the speed before using it.** Each quarter's median is pulled toward
+1. **Shrink the speed before using it.** Each quarter's average is pulled toward
    the region's own history, weighted by the number of tests behind it:
    `w = tests / (tests + c)`. The constant `c` is the median test count of the
    training years, 141, so a typical region trusts this quarter and its past
@@ -331,7 +331,7 @@ the five jobs a deployed version would run on a schedule:
 | stage | what it does | when it runs |
 | --- | --- | --- |
 | collect | read the quarter Ookla published, aggregate tiles into regions, drop everything outside the state | once a quarter, after the release |
-| measure | shrink each region's median toward its own history | immediately after, deterministic |
+| measure | shrink each region's average toward its own history | immediately after, deterministic |
 | label | mark the declines that lasted | only for quarters with two quarters after them |
 | learn | refit on everything whose outcome is known | each quarter, from scratch |
 | rank | score the newest quarter and write the inspection list | each quarter |
@@ -356,7 +356,7 @@ themselves, so a label that waited less would mostly be labelling recoveries.
 
 The ranking is a priority order for inspection, not a decision. A crew confirms
 or dismisses what it finds, and those outcomes are the only labels that
-describe real faults rather than movements in a crowdsourced median.
+describe real faults rather than movements in a crowdsourced average.
 
 ## What the declines are
 
@@ -391,7 +391,7 @@ would be reading this project backwards.
 ### The declines are whole-link degradations, not measurement artefacts or congestion
 
 Everything above predicts these events without ever checking what they are. A
-fall in a crowdsourced download median could be a degraded cell, or the same
+fall in a crowdsourced download average could be a degraded cell, or the same
 cell measured by different people on different plans and handsets, and only one
 of those is worth sending a crew to.
 
@@ -668,7 +668,7 @@ alpha 0.25.
 Two limits. The crash years overlap the scored quarters, acceptable for a
 measure of where roads are dangerous, which barely moves in five years. And
 crashes inside tunnels, 746 of them, cannot be related to coverage at all:
-tunnel signal comes from in-tunnel systems that crowdsourced medians over an
+tunnel signal comes from in-tunnel systems that crowdsourced averages over an
 8 km region cannot see.
 
 ### The system excludes regional New South Wales before it predicts anything
@@ -983,6 +983,14 @@ so `requirements.txt` now pins every version and says why.
 
 **The training set was leaking.** See the next section; it cost a fifth of the
 headline figure.
+
+**The speeds are averages, not medians.** Ookla publishes each tile's average
+speed, and the panel combines tiles into a region by weighting those averages by
+test count. This file and the site had called the result a median throughout. A
+teammate's independent rebuild of the data stated it correctly, and every use of
+"median" for speed has been changed; no number moves, only the word. Averages
+are pulled harder than medians by a few very fast or very slow tests, which is
+one more reason the speeds are shrunk before use.
 
 The one thing a fresh clone cannot do is start from nothing. `data/*.csv` is
 not in the repository, so the panel has to be rebuilt first:

@@ -29,7 +29,7 @@ from model import (FEATURES, LAG_FEATURES, WEATHER_FEATURES, add_area_type,
 
 
 def add_regression_target(df):
-    """Next quarter's proportional change in median download speed."""
+    """Next quarter's proportional change in average download speed."""
     df = df.sort_values(["region", "t"]).copy()
     nxt = df.groupby("region")[["pct_change", "t"]].shift(-1)
     df["target_change"] = nxt["pct_change"].where(nxt["t"] - df["t"] == 1)

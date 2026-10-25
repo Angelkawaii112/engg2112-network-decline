@@ -9,7 +9,7 @@ that they fail differently and would be monitored differently:
              and drop everything outside New South Wales. Runs once a quarter,
              a few minutes after the release. Fails loudly and is simply
              retried; nothing downstream can run without it.
-  measure    shrink each region's median toward its own history by how many
+  measure    shrink each region's average toward its own history by how many
              tests stand behind it. Deterministic, no model, no training.
   label      mark the declines that lasted, which can only be done for quarters
              old enough to have two quarters after them. This is what makes the

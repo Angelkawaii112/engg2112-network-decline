@@ -1,4 +1,4 @@
-t,quarter,area,median_mbps,tests,regions,yoy_speed_%,yoy_tests_%
+t,quarter,area,avg_mbps,tests,regions,yoy_speed_%,yoy_tests_%
 8077,2019 Q1,city,66.55888347172706,52009,66,,
 8077,2019 Q1,rest of NSW,43.602268096136186,10019,89,,
 8078,2019 Q2,city,71.71035645028128,56518,65,,
