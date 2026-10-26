@@ -1,101 +1,99 @@
-# Where Will the Network Fail Next?
+# Direction E — NSW terrestrial coverage gaps and satellite services
 
-Mobile connectivity in New South Wales, studied from public data: where it will
-get worse, what changes it, who it serves badly, and where it does not reach.
+This folder is a self-contained E1–E4 project module for the team repository. It combines the NSW 4G outdoor coverage-gap analysis, satellite-service evidence, fixed Ookla trend analysis, and UOMO policy assessment. It does not replace or edit the parent repository's README, dependencies, or existing scripts.
 
-**ENGG2112 · Semester 2, 2026 · TUT05**
-Renyu Yang · Jingwei Qiu · Ying Xiao · Xiangbin Chen
+## Research questions
 
-**Live site:** https://yangrenrr.github.io/engg2112-network-decline/
+- **E1 — Where are the mapped terrestrial gaps?** Merge the 2026 ACCC Telstra, Optus and TPG 4G outdoor prediction maps, then describe the NSW union gap by modelled population, remoteness, selected roads and hospital locations.
+- **E2 — Can satellite services fill those gaps?** Distinguish coverage potential, services sold commercially, and voice capability measured in a trial. The government voice trial tested fixed voice over Starlink LEO broadband, not native phone-to-satellite calling.
+- **E3 — What fixed Ookla trend can be described around Starlink's 2021 entry?** E3 has not been run yet; no pre/post result or provider-specific effect is claimed.
+- **E4 — Is the UOMO enough?** Compare E1 exposure with the future outdoor voice/SMS obligation and identify timing, emergency-call, data and implementation limits.
 
----
+## Evidence snapshot — 25 October 2026
 
-## The question
+The ACCC maps refer to 31 January 2026, show predicted 4G outdoor coverage, and predate the standardised approach effective 30 June 2026. Operators' modelling assumptions differ. Telstra changed its mapping method in 2024 after identifying an underestimation issue in its 2022/2023 submissions; interpret cross-year changes carefully.
 
-How healthy is mobile connectivity across New South Wales, where is it failing
-its users, and where should limited resources go?
+Telstra Satellite Messaging is a commercial Starlink Direct-to-Cell service for eligible phones and plans. It supports SMS and selected low-bandwidth apps, but not voice calls, full internet access, or Triple Zero. The Australian Government voice trial ran from November 2024 to July 2025 across 50 regional/remote regions, including eight NSW regions. The Department reports that Starlink and NBN fixed wireless generally performed well on most technical metrics; this trial validates a fixed-voice access type, not D2D mobile voice. The October 2026 ACCC discussion paper says D2D voice services were not currently available.
 
-Carriers can see their own networks; regulators, councils and the public
-cannot. This project asks what public, crowdsourced speed tests can tell them.
+The Minister announced on 16 October 2026 that the UOMO had passed Parliament and was planned to start on 1 December 2027, subject to market developments. Verify Royal Assent, the final Act, emergency-call requirements and operative service standards before publication. The announced baseline is outdoor voice and SMS, not full mobile broadband.
 
-| | Objective | Question | Status |
-| --- | --- | --- | --- |
-| **O1** | Predict | Which regions face a lasting decline, and how far can that ranking be trusted? | done |
-| **O2** | Change | How did new towers, the 3G switch-off, and bushfires and floods change performance? | [done](experiments/events/README.md) |
-| **O3** | Quality and fairness | Is the network good enough, and who is served worst? | [partly done](experiments/quality_fairness/README.md) |
-| **O4** | Resilience | Which regions depend on a single carrier, with no fallback in an emergency? | in progress |
-| **O5** | Gaps | Where is there no terrestrial coverage, and can satellite fill it? | in progress |
+## Files
 
-Data, methods, owners and limits for each: **[PLAN.md](PLAN.md)**.
-Full results with every table: **[RESULTS.md](RESULTS.md)**.
+- data/sources.yml — source dates, links, licences and handling notes for E1–E4.
+- data/e2/satellite_service_matrix.csv — service capability and evidence-class matrix.
+- data/e2/nsw_voice_trial_sites.csv — eight NSW government LEO voice-trial regions and closest towns.
+- docs/E1_results.md — team-run E1 results, interpretation and method notes.
+- docs/E2_satellite-capability.md — service comparison and E1 crosswalk method.
+- docs/E3_speed-trends.md — Ookla metrics, study design, launch transition and limitations.
+- docs/E4_policy-assessment.md — policy adequacy assessment and E1 measures.
+- scripts/ — initial E1 preparation/summarisation plus E2 crosswalk, E3 trend and E4 report scripts. The team-added E1 helper implementations are described in docs/E1_results.md.
 
-## O1 in brief
+## Setup
 
-The system ranks NSW regions by the risk of a **lasting decline**: average
-mobile download speed falling at least 20% and still down a quarter later. The
-output is a list of places to **investigate**, not a list of faults.
+Create the environment:
 
-```
-Ookla quarterly tiles, clipped to NSW
-  -> ~8 km regions
-  -> each region's speed shrunk toward its own history, by test count
-  -> ranked by how far it sits above its own long-run level
-  -> random forest flags steep falls and predicts which will recover
-  -> inspection list, sized by what a missed decline costs
-```
+    conda env create -f environment.yml
+    conda activate nsw-coverage-gap-direction-e
 
-**What we found**, scored quarter by quarter (13 quarters, 43 lasting declines):
+The three ACCC 2026 coverage maps are team-supplied inputs and stay outside Git. Download the public E1 supporting layers:
 
-- Inspecting the top 15% of regions finds **86%** of lasting declines, against 15% at random.
-- A **one-parameter rule beats the random forest** at that budget. Five other model types were tried; none did better. The forest wins only at tighter budgets (10%).
-- **68% of falls recover on their own** within two quarters. The ones that do not, stay down. The forest predicts which will recover better than any simple rule.
-- Declines are **real link degradations** (upload falls too in 86% of cases), not congestion and not tied to income.
-- Weighting by consequence works only with the right measure: **injury crashes on rural 80 km/h+ roads** lift the crash-weighted share of declines caught from 75% to 91%; all crashes make it worse.
-- **Regional NSW is excluded**: 94% of its data lacks the history the model needs. O3 to O5 study those areas instead.
-- Weather, neighbouring regions and census population **add nothing**.
+    python scripts/download_reference_data.py
 
-## Limits
+Do not download, commit or redistribute raw ACMA licence data. Ookla tiles are licensed CC BY-NC-SA 4.0 and should not be committed.
 
-- **Few events.** 43 lasting declines across 13 quarters; figures are indicative, not precise.
-- **Test years reused.** Many methods were compared on the same quarters, so this is an evaluation on available data, not an independent validation.
-- **Measured, not confirmed.** A lasting decline is a drop in a crowdsourced average; only an on-site check confirms a fault.
+## E1 — Current result and method notes
 
-## Data
+The team-run figures and interpretation are in docs/E1_results.md. The result is based on the three ACCC 2026 predicted 4G outdoor layers and has a map reference date of 31 January 2026.
 
-| Data | Source | Licence |
-| --- | --- | --- |
-| Mobile speed, latency, tests, devices | [Ookla Open Data](https://github.com/teamookla/ookla-open-data), quarterly, 2019 Q1 – 2026 Q1 | CC BY-NC-SA 4.0 |
-| State and SA2 boundaries, SEIFA, population | Australian Bureau of Statistics | CC BY 4.0 |
-| Road crashes, 2021–2025 | [Transport for NSW](https://opendata.transport.nsw.gov.au/dataset/nsw-crash-data) | CC BY 3.0 AU |
-| Weather (tested, not used) | [Open-Meteo](https://open-meteo.com/) | open |
-| Daily speed tests (robustness check) | [M-Lab NDT](https://www.measurementlab.net/) | CC0 |
+The rerun used the team-added scripts prepare_coverage_stream.py and summarize_gap_raster.py. The first streams the approximately 1.3 GB Optus source after GDAL could not read the full file reliably. The second uses a 100 m raster grid to avoid dissolving roughly one million small polygons; the team reports that population, road and hospital decision rules match the earlier method. The remoteness field is RA_NAME_2021.
 
-Data sources for O2 to O5 are listed in [PLAN.md](PLAN.md).
+A separate Optus–TPG MOCN shared-network map check reportedly left the results unchanged. Keep this as a robustness check, not as an extra operator.
 
-## Run it
+These helper scripts were added after the initial module was prepared. The reported rerun used the team versions; this local follow-up patch does not include their implementations. Check that both files are present in your repository before rerunning. The original prepare_coverage.py and summarize_gap.py remain as the initial workflow and did not produce the reported rerun.
 
-```bash
-python3 -m pip install -r requirements.txt     # versions are pinned; results depend on them
+## E2 — Compare satellite capability with E1
 
-python src/build_panel.py                       # rebuild the panel from Ookla (takes hours)
-python src/boundary.py --panel data/panel.csv   # clip to NSW -> data/panel_nsw.csv
+After E1 has produced outputs/generated/summary.csv:
 
-python src/pipeline.py                          # panel to inspection list, one command
-python src/verify_claims.py                     # re-derive the published figures (20 of 20)
-python src/build_site.py                        # refresh the site's data
-```
+    python scripts/build_satellite_gap_crosswalk.py --e1-summary outputs/generated/summary.csv
 
-Each analysis in RESULTS.md has its own script in `src/`, named after what it
-tests (`walkforward.py`, `recovery.py`, `equity.py`, ...).
+This links E1's gap population, area, roads and hospitals to the evidence matrix. It does not claim an exact satellite overlap: the checked public sources do not provide a matching downloadable D2D service polygon.
 
-## Repository
+## E3 — Summarise fixed Ookla trends
 
-```
-src/            pipeline, models and every analysis
-experiments/    teammates' studies (one folder per objective)
-docs/           the published site: index.html + data.json
-figures/        report figures (PDF)
-notes/          related work
-PLAN.md         objectives, owners, rules
-RESULTS.md      all results
-```
+**Status: not run yet.** If it is not completed, report only the planned study scope below; do not present a pre/post change or a Starlink effect as a result.
+
+
+Choose one NSW regional/remote polygon and use the same boundary for all quarters. Query public quarterly Parquet directly:
+
+    python scripts/run_ookla_e3.py --study-area PATH_TO_REMOTE_NSW.gpkg --remote --start-quarter 2019Q1 --end-quarter 2026Q1 --output-dir outputs/generated/ookla
+
+Or read local quarterly Parquet files:
+
+    python scripts/run_ookla_e3.py --study-area PATH_TO_REMOTE_NSW.gpkg --input-dir PATH_TO_OOKLA_PARQUETS --output-dir outputs/generated/ookla
+
+The script reports median tile-average speed, not the median of individual tests. It keeps 2021 Q2 as a transition quarter; do not interpret a pre/post change as proof of a Starlink effect.
+
+## E4 — Assess the policy against E1
+
+After E1 has produced summary.csv:
+
+    python scripts/build_e4_policy_report.py --e1-summary outputs/generated/summary.csv
+
+The generated report carries the E1 population, road, hospital and gap-area values into a qualitative assessment. It treats the UOMO as a future policy target, not current coverage.
+
+## Interpretation limits
+
+- E1 identifies places outside all three supplied predicted terrestrial 4G maps; it does not guarantee no signal at every point.
+- Telstra's broad “most outdoor areas” satellite statement is not an exact map polygon and cannot support exact per-cell satellite-covered population totals.
+- Fixed LEO broadband/voice can help some eligible premises, but it does not provide mobile coverage along roads.
+- Current D2D messaging is not D2D voice, emergency calling, or general mobile broadband.
+- E3 has not been run yet. If it remains unrun, report only the planned scope; even when run, fixed Ookla tile averages do not identify ISP/access technology and cannot establish a Starlink effect.
+- E4 requires a fresh legal-status check and confirmation of emergency-call standards before publication.
+
+## Sources
+
+See data/sources.yml and the E2–E4 reports in docs/. Telstra's 2024 coverage-method change is documented in the [ACCC 2024 report](https://www.accc.gov.au/system/files/mobile-infrastructure-report-2024.pdf) and [Telstra's letter to the ACCC](https://www.accc.gov.au/system/files/Telstra%20letter%20to%20ACCC%20%E2%80%93%20changed%20methodology%20for%20calculating%204G%20outdoor%20coverage%20%E2%80%93%202024%20%5BRedacted%5D.pdf).
+
+
+
